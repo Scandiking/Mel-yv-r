@@ -70,6 +70,58 @@ so the browser throws `TypeError: NetworkError` before we can even inspect the s
 
 ---
 
+## Session updates — 2026-07-04
+
+### Fixed: tide chart missing entirely in `npm run dev`
+**Problem:** the Vite dev proxy forwarded api.met.no's raw plain-text tidal response
+unchanged, but the client (`src/services/tidalApi.ts`) calls `res.json()`, expecting
+the same parsed shape the production Vercel Edge Function returns. In dev, that
+`JSON.parse` threw, `useTides` swallowed the error silently, and the tide chart just
+never received data — it wasn't a rendering bug, the fetch itself was broken locally.
+
+**Fix:** extracted the plain-text parser into a shared module, `api/_tidalParse.ts`,
+used by both `api/tides.ts` (the production edge function) and a new Vite
+`configureServer` middleware (`tidalDevProxy` in `vite.config.ts`) that now does the
+same fetch-with-User-Agent + parse-to-JSON locally, instead of blindly proxying bytes.
+
+### Redesigned the HourlyCharts panel
+- Connected the temperature+rain, wind, wind-direction, and tide panels into one
+  seamless card: removed the per-panel captions/gaps, hid the repeated time axis on
+  all but the bottom-most panel, and added a single shared legend row.
+- Added always-visible value labels on the temperature and wind-speed lines at every
+  even hour (custom recharts `dot` renderers), so the reading doesn't require hover.
+- Tide high/low points are now labeled directly on the tide curve; removed the old
+  "pill row" of upcoming extrema that sat outside the scrollable chart.
+- Fixed a misaligned "now" reference line in the tide panel: recharts'
+  `allowDataOverflow` defaults to `false`, so the ~2h of pre-"now" context data added
+  to the tide series silently stretched *that panel's* scale relative to the other
+  two, shifting the whole timeline. Fixed with an explicit `allowDataOverflow: true`
+  on the shared axis config.
+- Added weather-symbol icons above the temperature labels.
+- Fixed wind arrow direction: arrows were rotated to point toward where the wind
+  comes *from* instead of where it's blowing *to* — rotated 180° so a "wind from
+  north" reading now visibly points south.
+- Hover is now synced across all three panels via `syncId` + `syncMethod="value"`
+  (matched by timestamp, not array index, since the tide dataset has a different
+  start offset/length than the weather data) — one hover now shows temperature,
+  precipitation, wind speed + direction, and tide height together.
+
+### Redesigned CurrentWeather (the hero)
+Replaced the generic big-thin-number weather-widget look with a "ship's instrument
+panel" identity, scoped entirely to `CurrentWeather.tsx`/`.module.css` + a Google
+Fonts `<link>` in `index.html` (no other components touched):
+- Palette: parchment / ink / deep-teal / brass / hazard-red, as local CSS vars on
+  `.card` with light + dark variants — grounded in Meløysjøen being a fjord just
+  inside the Arctic Circle.
+- Type: Spectral serif for the temperature + condition text, IBM Plex Mono for
+  instrument-style readouts (humidity, precipitation, compass bearing).
+- Signature element: a compass-rose dial replaces the plain "Vind X m/s S" text
+  line — brass ring, tick marks, and a needle that animates into the wind's bearing
+  on load (respects `prefers-reduced-motion`), reusing the same from→to bearing
+  convention fixed in HourlyCharts above.
+
+---
+
 ## Known issues / still open
 
 ### Tidal data only covers ~3 days, chart expects 7
@@ -83,6 +135,12 @@ imported anywhere (replaced by the inline tide section in HourlyCharts). Safe to
 ### CSS parsing warnings in console
 Two warnings: `Error in parsing value for 'letter-spacing'` and `Error in parsing value for 'font-size'`.
 These come from the existing component CSS and don't affect functionality. Track down and fix later.
+
+### CurrentWeather now depends on Google Fonts (Spectral, IBM Plex Mono)
+Loaded via a `<link>` in `index.html`, not self-hosted. First load with no network
+will fall back to system fonts (degrades fine, just not on-brand) since the PWA's
+Workbox config doesn't cache the Google Fonts CDN yet. Fine for now; revisit if the
+offline-first PWA use case ends up mattering more than it does today.
 
 ### Vercel proxy not yet deployed/tested in production
 The `api/tides.ts` Edge Function has only been tested via the Vite dev proxy.

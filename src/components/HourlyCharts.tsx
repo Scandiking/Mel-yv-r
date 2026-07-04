@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import type { ForecastTimestep } from '../types/weather';
 import type { TidalResponse, TideExtrema } from '../types/tides';
+import { symbolCodeToSvg } from '../services/symbolMap';
 import styles from './HourlyCharts.module.css';
 
 // ─── constants ───────────────────────────────────────────────────────────────
@@ -21,7 +22,9 @@ const DAYS = 7;
 const DURATION_MS = DAYS * 24 * 3600_000;
 const Y_LEFT = 36;
 const Y_RIGHT = 28; // wide enough to label the rain axis
-const CHART_MARGIN = { top: 6, right: 0, left: 0, bottom: 0 };
+const CHART_MARGIN = { top: 14, right: 0, left: 0, bottom: 2 };
+// Extra headroom for the weather icon drawn above each temperature label.
+const TEMP_CHART_MARGIN = { ...CHART_MARGIN, top: 34 };
 const CHART_HEIGHT_COMBINED = 160; // temperature line + rain bars
 const CHART_HEIGHT_WIND = 80;     // wind speed line
 const CHART_HEIGHT_TIDE = 100;
@@ -81,6 +84,7 @@ interface HourPoint {
   rain: number;
   windDir: number;
   windSpeed: number;
+  symbol: string;
 }
 
 function buildWeatherData(timeseries: ForecastTimestep[], now: number, cutoff: number): HourPoint[] {
@@ -97,6 +101,7 @@ function buildWeatherData(timeseries: ForecastTimestep[], now: number, cutoff: n
         rain: parseFloat((period.details.precipitation_amount ?? 0).toFixed(1)),
         windDir: t.data.instant.details.wind_from_direction,
         windSpeed: parseFloat(t.data.instant.details.wind_speed.toFixed(1)),
+        symbol: period.summary.symbol_code,
       };
     });
 }
@@ -123,15 +128,85 @@ function buildTideData(tides: TidalResponse, now: number, cutoff: number): TideP
     .map(([ts, total]) => ({ ts, total }));
 }
 
+// ─── always-on value labels (every even hour) ───────────────────────────────
+
+function isEvenHour(ts: number): boolean {
+  return new Date(ts).getHours() % 2 === 0;
+}
+
+function TempValueDot(props: { cx?: number; cy?: number; payload?: HourPoint; value?: number }) {
+  const { cx, cy, payload, value } = props;
+  if (cx == null || cy == null || !payload || !isEvenHour(payload.ts)) return null;
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={2.5} fill="var(--accent)" />
+      <image href={symbolCodeToSvg(payload.symbol)} x={cx - 8} y={cy - 33} width={16} height={16} />
+      <text x={cx} y={cy - 9} textAnchor="middle" fontSize={9} fontWeight={600} fill="var(--accent)">
+        {value}°
+      </text>
+    </g>
+  );
+}
+
+function WindValueDot(props: { cx?: number; cy?: number; payload?: HourPoint; value?: number }) {
+  const { cx, cy, payload, value } = props;
+  if (cx == null || cy == null || !payload || !isEvenHour(payload.ts)) return null;
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={2.5} fill="#8b5cf6" />
+      <text x={cx} y={cy - 8} textAnchor="middle" fontSize={9} fontWeight={600} fill="#8b5cf6">
+        {value}
+      </text>
+    </g>
+  );
+}
+
+// Keeps extrema labels from clipping off the left/right edge of the plot area.
+function makeTideValueDot(extremaByTs: Map<number, TideExtrema>, plotLeft: number, plotRight: number) {
+  return function TideValueDot(props: { cx?: number; cy?: number; payload?: TidePoint }) {
+    const { cx, cy, payload } = props;
+    const extremum = payload && extremaByTs.get(payload.ts);
+    if (cx == null || cy == null || !extremum) return null;
+    const isHigh = extremum.type === 'high';
+    const EDGE = 18;
+    let anchor: 'start' | 'middle' | 'end' = 'middle';
+    let textX = cx;
+    if (cx - plotLeft < EDGE) {
+      anchor = 'start';
+      textX = cx + 4;
+    } else if (plotRight - cx < EDGE) {
+      anchor = 'end';
+      textX = cx - 4;
+    }
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={3} fill={isHigh ? 'var(--accent)' : '#818cf8'} />
+        <text
+          x={textX}
+          y={isHigh ? cy - 10 : cy + 18}
+          textAnchor={anchor}
+          fontSize={9}
+          fontWeight={600}
+          fill={isHigh ? 'var(--accent)' : '#818cf8'}
+        >
+          {extremum.total.toFixed(2)}m
+        </text>
+      </g>
+    );
+  };
+}
+
 // ─── wind arrow ──────────────────────────────────────────────────────────────
 
+// `direction` is wind_from_direction (meteorological "from" bearing), so the
+// arrow is rotated 180° further to point where the wind is actually blowing to.
 function WindArrow({ direction }: { direction: number }) {
   return (
     <svg
       width="16"
       height="16"
       viewBox="0 0 24 24"
-      style={{ transform: `rotate(${direction}deg)`, display: 'block', flexShrink: 0 }}
+      style={{ transform: `rotate(${direction + 180}deg)`, display: 'block', flexShrink: 0 }}
       aria-hidden="true"
     >
       <line x1="12" y1="4" x2="12" y2="20" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" />
@@ -155,9 +230,15 @@ const TOOLTIP_STYLE = {
     border: '1px solid var(--border)',
     borderRadius: 8,
     fontSize: 12,
+    padding: '6px 10px',
   },
   labelStyle: { color: 'var(--text-2)' },
 };
+const TOOLTIP_CURSOR = { stroke: 'var(--text-4)', strokeDasharray: '3 3' };
+// Shared syncId keeps the hover cursor + tooltip lined up across all three
+// panels; syncMethod "value" matches by timestamp instead of array index,
+// since the tide dataset starts earlier and is bucketed differently.
+const SYNC_ID = 'hourly-charts';
 
 // ─── component ───────────────────────────────────────────────────────────────
 
@@ -191,22 +272,35 @@ export function HourlyCharts({ timeseries, tides }: Props) {
   // Wind direction arrows: every other hour to avoid crowding
   const windItems = weatherData.filter((_, i) => i % 2 === 0);
 
-  // Tide extrema pills shown above the scroll (always visible)
-  const upcomingExtrema: TideExtrema[] = tideData.length > 0
-    ? findExtrema(tideData).filter((e) => new Date(e.time).getTime() > now).slice(0, 4)
-    : [];
+  const hasTide = tideData.length > 0 && !!tideLocation;
+
+  // Extrema (high/low) plotted directly on the tide chart, keyed by timestamp.
+  const extremaByTs = new Map<number, TideExtrema>(
+    (hasTide ? findExtrema(tideData) : []).map((e) => [new Date(e.time).getTime(), e]),
+  );
+  const tideDot = makeTideValueDot(extremaByTs, Y_LEFT, chartWidth - Y_RIGHT);
 
   const xAxisProps = {
     dataKey: 'ts' as const,
     type: 'number' as const,
     scale: 'time' as const,
     domain: [now, domainEnd] as [number, number],
+    // Tide data includes a couple of hours before "now" for curve context; without this
+    // recharts silently stretches the scale to fit that overflow, shifting the now-line
+    // out of alignment with the temperature/wind panels.
+    allowDataOverflow: true,
     ticks,
     tickFormatter: tickLabel,
     tick: { fill: 'var(--text-3)', fontSize: 9 },
     tickLine: false,
     axisLine: false,
   };
+
+  // Only the bottom-most panel shows the shared time axis labels; the rest stay
+  // aligned but hidden so the stacked charts read as one connected block.
+  const xAxisHidden = { ...xAxisProps, tick: false, height: 1 };
+  const xAxisVisible = { ...xAxisProps, height: 18 };
+  const weatherPanelIsLast = !hasTide;
 
   const yAxisLeft = {
     yAxisId: 'left' as const,
@@ -230,32 +324,13 @@ export function HourlyCharts({ timeseries, tides }: Props) {
       <h2 className={styles.heading}>Timevarsel</h2>
       <p className={styles.hint}>← sveip for å se 7 dager frem</p>
 
-      {/* Tide extrema pills — outside scroll so always visible */}
-      {upcomingExtrema.length > 0 && (
-        <div className={styles.extremaRow}>
-          {upcomingExtrema.map((e) => (
-            <div
-              key={e.time}
-              className={`${styles.extremum} ${e.type === 'high' ? styles.high : styles.low}`}
-            >
-              <span className={styles.extremumType}>{e.type === 'high' ? 'Høyvann' : 'Lavvann'}</span>
-              <span className={styles.extremumVal}>{e.total.toFixed(2)} m</span>
-              <span className={styles.extremumTime}>
-                {new Date(e.time).toLocaleTimeString('nb-NO', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className={styles.scrollOuter}>
-        <div style={{ width: chartWidth }}>
+        <div className={styles.chartStack} style={{ width: chartWidth }}>
 
           {/* ── temperature (line, left axis) + rain (bars, right axis) ── */}
-          <p className={styles.chartLabel}>Temperatur °C · Nedbør mm</p>
-          <ComposedChart width={chartWidth} height={CHART_HEIGHT_COMBINED} data={weatherData} margin={CHART_MARGIN}>
+          <ComposedChart width={chartWidth} height={CHART_HEIGHT_COMBINED} data={weatherData} margin={TEMP_CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
-            <XAxis {...xAxisProps} />
+            <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               {...yAxisLeft}
               domain={[tempMin, tempMax]}
@@ -273,6 +348,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
             <ReferenceLine yAxisId="left" x={now} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
             <Tooltip
               {...TOOLTIP_STYLE}
+              cursor={TOOLTIP_CURSOR}
               labelFormatter={tooltipLabel}
               formatter={(v: number, name: string) => {
                 if (name === 'temp') return [`${v} °C`, 'Temperatur'];
@@ -282,14 +358,13 @@ export function HourlyCharts({ timeseries, tides }: Props) {
             />
             {/* Bars first so the temp line renders on top */}
             <Bar yAxisId="right" dataKey="rain" fill="var(--accent-b)" opacity={0.75} radius={[2, 2, 0, 0]} maxBarSize={10} />
-            <Line yAxisId="left" type="monotone" dataKey="temp" stroke="var(--accent)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: 'var(--accent)' }} />
+            <Line yAxisId="left" type="monotone" dataKey="temp" stroke="var(--accent)" strokeWidth={2} dot={TempValueDot} activeDot={{ r: 4, fill: 'var(--accent)' }} />
           </ComposedChart>
 
           {/* ── wind speed ── */}
-          <p className={styles.chartLabel}>Vind m/s</p>
-          <ComposedChart width={chartWidth} height={CHART_HEIGHT_WIND} data={weatherData} margin={CHART_MARGIN}>
+          <ComposedChart width={chartWidth} height={CHART_HEIGHT_WIND} data={weatherData} margin={CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
-            <XAxis {...xAxisProps} />
+            <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               yAxisId="left"
               width={Y_LEFT}
@@ -301,16 +376,22 @@ export function HourlyCharts({ timeseries, tides }: Props) {
             <YAxis yAxisId="right" orientation="right" width={Y_RIGHT} tick={false} tickLine={false} axisLine={false} />
             <ReferenceLine yAxisId="left" x={now} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
             <Tooltip
-              {...TOOLTIP_STYLE}
-              labelFormatter={tooltipLabel}
-              formatter={(v: number) => [`${v} m/s`, 'Vind']}
-              itemStyle={{ color: '#8b5cf6' }}
+              cursor={TOOLTIP_CURSOR}
+              content={({ active, payload }: { active?: boolean; payload?: ReadonlyArray<{ payload?: HourPoint }> }) => {
+                const point = payload?.[0]?.payload;
+                if (!active || !point) return null;
+                return (
+                  <div style={TOOLTIP_STYLE.contentStyle}>
+                    <div style={TOOLTIP_STYLE.labelStyle}>{tooltipLabel(point.ts)}</div>
+                    <div style={{ color: '#8b5cf6' }}>{point.windSpeed} m/s · {compassDir(point.windDir)}</div>
+                  </div>
+                );
+              }}
             />
-            <Line yAxisId="left" type="monotone" dataKey="windSpeed" stroke="#8b5cf6" strokeWidth={1.5} dot={false} activeDot={{ r: 3, fill: '#8b5cf6' }} />
+            <Line yAxisId="left" type="monotone" dataKey="windSpeed" stroke="#8b5cf6" strokeWidth={1.5} dot={WindValueDot} activeDot={{ r: 3, fill: '#8b5cf6' }} />
           </ComposedChart>
 
           {/* ── wind direction arrows ── */}
-          <p className={styles.chartLabel}>Vindretning</p>
           <div className={styles.windStrip} style={{ width: chartWidth }}>
             {windItems.map((d) => {
               const offsetPx = ((d.ts - now) / 3600_000) * PX_PER_HOUR;
@@ -324,45 +405,68 @@ export function HourlyCharts({ timeseries, tides }: Props) {
           </div>
 
           {/* ── tide ── */}
-          {tideData.length > 0 && tideLocation && (
-            <>
-              <p className={styles.chartLabel}>Tidevann — {tideLocation.name}</p>
-              <AreaChart width={chartWidth} height={CHART_HEIGHT_TIDE} data={tideData} margin={CHART_MARGIN}>
-                <defs>
-                  <linearGradient id="tideGradPanel" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
-                <XAxis {...xAxisProps} />
-                <YAxis
-                  width={Y_LEFT}
-                  tick={{ fill: 'var(--text-3)', fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v: number) => `${v}m`}
-                />
-                <ReferenceLine x={now} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
-                <Tooltip
-                  {...TOOLTIP_STYLE}
-                  labelFormatter={tooltipLabel}
-                  formatter={(v: number) => [`${Number(v).toFixed(2)} m`, 'Vannstand']}
-                  itemStyle={{ color: 'var(--accent)' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="total"
-                  stroke="var(--accent)"
-                  strokeWidth={2}
-                  fill="url(#tideGradPanel)"
-                  dot={false}
-                />
-              </AreaChart>
-            </>
+          {hasTide && (
+            <AreaChart width={chartWidth} height={CHART_HEIGHT_TIDE} data={tideData} margin={CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
+              <defs>
+                <linearGradient id="tideGradPanel" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+              <XAxis {...xAxisVisible} />
+              <YAxis
+                yAxisId="left"
+                width={Y_LEFT}
+                tick={{ fill: 'var(--text-3)', fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v: number) => `${v}m`}
+              />
+              {/* Hidden axis reserving the same right-side width as the other panels, so the "now" line lines up */}
+              <YAxis yAxisId="right" orientation="right" width={Y_RIGHT} tick={false} tickLine={false} axisLine={false} />
+              <ReferenceLine yAxisId="left" x={now} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
+              <Tooltip
+                {...TOOLTIP_STYLE}
+                cursor={TOOLTIP_CURSOR}
+                labelFormatter={tooltipLabel}
+                formatter={(v: number) => [`${Number(v).toFixed(2)} m`, 'Vannstand']}
+                itemStyle={{ color: 'var(--accent)' }}
+              />
+              <Area
+                yAxisId="left"
+                type="monotone"
+                dataKey="total"
+                stroke="var(--accent)"
+                strokeWidth={2}
+                fill="url(#tideGradPanel)"
+                dot={tideDot}
+              />
+            </AreaChart>
           )}
 
         </div>
+      </div>
+
+      <div className={styles.legend}>
+        <span className={styles.legendItem}>
+          <i className={styles.legendLine} style={{ background: 'var(--accent)' }} />
+          Temperatur °C
+        </span>
+        <span className={styles.legendItem}>
+          <i className={styles.legendSwatch} style={{ background: 'var(--accent-b)' }} />
+          Nedbør mm
+        </span>
+        <span className={styles.legendItem}>
+          <i className={styles.legendLine} style={{ background: '#8b5cf6' }} />
+          Vind m/s
+        </span>
+        {hasTide && (
+          <span className={styles.legendItem}>
+            <i className={styles.legendLine} style={{ background: 'var(--accent)' }} />
+            Tidevann — {tideLocation!.name}
+          </span>
+        )}
       </div>
     </div>
   );

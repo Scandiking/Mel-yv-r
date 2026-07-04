@@ -1,26 +1,59 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { parseTidalText } from './api/_tidalParse';
+
+// Dev-only stand-in for the Vercel Edge Function at api/tides.ts: fetches the
+// plain-text Tidalwater response from api.met.no (with the mandatory User-Agent
+// header) and parses it into the same JSON shape the client expects.
+function tidalDevProxy(): Plugin {
+  return {
+    name: 'tidal-dev-proxy',
+    configureServer(server) {
+      server.middlewares.use('/api/tides', async (req, res) => {
+        const url = new URL(req.url ?? '', 'http://localhost');
+        const harbor = url.searchParams.get('harbor');
+        if (!harbor) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Missing harbor' }));
+          return;
+        }
+
+        try {
+          const upstream = `https://api.met.no/weatherapi/tidalwater/1.1/?harbor=${encodeURIComponent(harbor)}`;
+          const upstreamRes = await fetch(upstream, {
+            headers: { 'User-Agent': 'MeloyvaerApp/1.0 (https://github.com/meloyvaer/app)' },
+          });
+
+          if (!upstreamRes.ok) {
+            res.statusCode = upstreamRes.status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: `Upstream ${upstreamRes.status}` }));
+            return;
+          }
+
+          const text = await upstreamRes.text();
+          const displayName = harbor.charAt(0).toUpperCase() + harbor.slice(1);
+          const json = parseTidalText(text, displayName);
+
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(json));
+        } catch {
+          res.statusCode = 502;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Upstream failed' }));
+        }
+      });
+    },
+  };
+}
 
 export default defineConfig({
-  server: {
-    proxy: {
-      // In dev, proxy /api/tides to api.met.no adding the required User-Agent header.
-      // In production this is handled by the Vercel Edge Function at api/tides.ts.
-      '/api/tides': {
-        target: 'https://api.met.no',
-        changeOrigin: true,
-        rewrite: (path) => path.replace('/api/tides', '/weatherapi/tidalwater/1.1/'),
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('User-Agent', 'MeloyvaerApp/1.0 (https://github.com/meloyvaer/app)');
-          });
-        },
-      },
-    },
-  },
   plugins: [
+    tidalDevProxy(),
     react(),
     viteStaticCopy({
       targets: [

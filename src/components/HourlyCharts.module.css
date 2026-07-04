@@ -17,43 +17,6 @@
   margin: 0 0 0.5rem;
 }
 
-.extremaRow {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.5rem;
-}
-
-.extremum {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: var(--bg-card);
-  border-radius: 10px;
-  padding: 0.4rem 0.65rem;
-  min-width: 64px;
-}
-
-.extremumType {
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.high .extremumType { color: var(--accent); }
-.low .extremumType  { color: #818cf8; }
-
-.extremumVal {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.extremumTime {
-  font-size: 0.65rem;
-  color: var(--text-3);
-}
-
 .scrollOuter {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -67,18 +30,19 @@
   display: none;
 }
 
-.chartLabel {
-  font-size: 0.68rem;
-  color: var(--text-4);
-  margin: 0.6rem 0 0.15rem;
-  user-select: none;
+/* Stack of charts rendered edge-to-edge so they read as one connected block */
+.chartStack {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 /* Wind direction strip: relatively positioned, arrows absolutely placed */
 .windStrip {
   position: relative;
   height: 44px;
-  margin-bottom: 0.25rem;
 }
 
 .windItem {
@@ -96,4 +60,34 @@
   color: var(--text-2);
   font-weight: 600;
   line-height: 1;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+  font-size: 0.65rem;
+  color: var(--text-3);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.legendLine {
+  display: inline-block;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
 }
