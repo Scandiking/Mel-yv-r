@@ -19,7 +19,6 @@
   --warn:        #b45309;
   --warn-bg:     rgba(180, 83, 9, 0.12);
   --err:         #dc2626;
-  --spinner-bg:  rgba(2, 132, 199, 0.2);
   --chart-grid:  rgba(0, 0, 0, 0.06);
 }
 
@@ -38,7 +37,6 @@
     --warn:        #fbbf24;
     --warn-bg:     rgba(234, 179, 8, 0.15);
     --err:         #f87171;
-    --spinner-bg:  rgba(56, 189, 248, 0.2);
     --chart-grid:  rgba(255, 255, 255, 0.04);
   }
 }

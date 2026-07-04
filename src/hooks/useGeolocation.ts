@@ -51,6 +51,11 @@ export interface GeoState {
 
 export function useGeolocation(): GeoState {
   const [pref, setPref] = useState<StoredPref | null>(() => loadPref());
+  // Tracks "the user has made a choice" the instant they act, separately from
+  // `pref` (which only updates once a GPS fix actually succeeds). Without this,
+  // clicking "allow" would leave needsConsent true for the whole async gap
+  // while the browser fetches a position, showing the consent screen forever.
+  const [consented, setConsented] = useState(() => pref !== null);
   const [state, setState] = useState({
     lat: null as number | null,
     lon: null as number | null,
@@ -59,6 +64,7 @@ export function useGeolocation(): GeoState {
   });
 
   const requestGeolocation = useCallback(() => {
+    setConsented(true);
     if (!navigator.geolocation) {
       setState({ lat: null, lon: null, error: 'Nettleseren støtter ikke posisjonstjenester.', loading: false });
       return;
@@ -85,6 +91,7 @@ export function useGeolocation(): GeoState {
   }, []);
 
   const setManualLocation = useCallback((lat: number, lon: number) => {
+    setConsented(true);
     savePref({ mode: 'manual', lat, lon });
     setPref({ mode: 'manual', lat, lon });
     setState({ lat, lon, error: null, loading: false });
@@ -93,6 +100,7 @@ export function useGeolocation(): GeoState {
   const resetLocation = useCallback(() => {
     clearPref();
     setPref(null);
+    setConsented(false);
     setState({ lat: null, lon: null, error: null, loading: false });
   }, []);
 
@@ -114,7 +122,7 @@ export function useGeolocation(): GeoState {
     lon: state.lon,
     error: state.error,
     loading: state.loading,
-    needsConsent: pref === null,
+    needsConsent: !consented,
     requestGeolocation,
     setManualLocation,
     resetLocation,

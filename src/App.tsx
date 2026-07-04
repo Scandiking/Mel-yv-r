@@ -3,6 +3,7 @@ import { useWeather } from './hooks/useWeather';
 import { useTides } from './hooks/useTides';
 import { useLocationName } from './hooks/useLocationName';
 import { LocationConsent } from './components/LocationConsent';
+import { CompassSpinner } from './components/CompassSpinner';
 import { CurrentWeather } from './components/CurrentWeather';
 import { HourlyForecast } from './components/HourlyForecast';
 import { HourlyCharts } from './components/HourlyCharts';
@@ -22,7 +23,7 @@ export default function App() {
   if (geo.loading) {
     return (
       <div className="status">
-        <div className="spinner" />
+        <CompassSpinner />
         <p>Finner posisjon…</p>
       </div>
     );
@@ -35,7 +36,7 @@ export default function App() {
   if (weather.loading && !weather.data) {
     return (
       <div className="status">
-        <div className="spinner" />
+        <CompassSpinner />
         <p>Laster varsel…</p>
       </div>
     );

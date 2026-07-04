@@ -1,0 +1,65 @@
+.dial {
+  --brass: #a8752f;
+  --ink: #17262b;
+  --hazard: #b0392b;
+  overflow: visible;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dial {
+    --brass: #dba75a;
+    --ink: #e9dfc8;
+    --hazard: #e2685a;
+  }
+}
+
+.ring {
+  fill: none;
+  stroke: var(--brass);
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+.tick {
+  stroke: var(--brass);
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+.label {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+.needle {
+  transform-origin: 50px 50px;
+  animation: spin 1.6s linear infinite;
+}
+
+.needleHead {
+  fill: var(--hazard);
+}
+
+.needleTail {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  opacity: 0.55;
+}
+
+.hub {
+  fill: var(--ink);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .needle {
+    animation: none;
+  }
+}
