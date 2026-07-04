@@ -2,16 +2,55 @@
   box-sizing: border-box;
 }
 
+:root {
+  --bg:          #f0f5fa;
+  --bg-card:     rgba(255, 255, 255, 0.75);
+  --bg-elevated: #ffffff;
+  --text:        #0f172a;
+  --text-2:      #334155;
+  --text-3:      #64748b;
+  --text-4:      #94a3b8;
+  --border:      rgba(0, 0, 0, 0.08);
+  --accent:      #0284c7;
+  --accent-b:    #2563eb;
+  --warn:        #b45309;
+  --warn-bg:     rgba(180, 83, 9, 0.12);
+  --err:         #dc2626;
+  --spinner-bg:  rgba(2, 132, 199, 0.2);
+  --chart-grid:  rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:          #0a1628;
+    --bg-card:     rgba(255, 255, 255, 0.05);
+    --bg-elevated: #132040;
+    --text:        #e2e8f0;
+    --text-2:      #94a3b8;
+    --text-3:      #64748b;
+    --text-4:      #475569;
+    --border:      rgba(255, 255, 255, 0.05);
+    --accent:      #38bdf8;
+    --accent-b:    #3b82f6;
+    --warn:        #fbbf24;
+    --warn-bg:     rgba(234, 179, 8, 0.15);
+    --err:         #f87171;
+    --spinner-bg:  rgba(56, 189, 248, 0.2);
+    --chart-grid:  rgba(255, 255, 255, 0.04);
+  }
+}
+
 html, body {
   margin: 0;
   padding: 0;
-  background: #0a1628;
+  background: var(--bg);
 }
 
 body {
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.5;
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -19,6 +58,7 @@ body {
 h1, h2, h3 {
   margin: 0;
   font-weight: 500;
+  color: var(--text);
 }
 
 p {

@@ -4,6 +4,22 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
+  server: {
+    proxy: {
+      // In dev, proxy /api/tides to api.met.no adding the required User-Agent header.
+      // In production this is handled by the Vercel Edge Function at api/tides.ts.
+      '/api/tides': {
+        target: 'https://api.met.no',
+        changeOrigin: true,
+        rewrite: (path) => path.replace('/api/tides', '/weatherapi/tidalwater/1.1/'),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('User-Agent', 'MeloyvaerApp/1.0 (https://github.com/meloyvaer/app)');
+          });
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     viteStaticCopy({
@@ -46,10 +62,12 @@ export default defineConfig({
           {
             urlPattern: /^https:\/\/api\.met\.no\//,
             handler: 'NetworkFirst',
-            options: {
-              cacheName: 'yr-api-cache',
-              expiration: { maxAgeSeconds: 3600 },
-            },
+            options: { cacheName: 'yr-api-cache', expiration: { maxAgeSeconds: 3600 } },
+          },
+          {
+            urlPattern: /\/api\/tides/,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'tides-proxy-cache', expiration: { maxAgeSeconds: 3600 } },
           },
         ],
       },

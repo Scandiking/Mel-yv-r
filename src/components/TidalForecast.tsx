@@ -49,12 +49,12 @@ export function TidalForecast({ data }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <h2 className={styles.heading}>Tidal water — {location.name}</h2>
+      <h2 className={styles.heading}>Tidevann — {location.name}</h2>
 
       <div className={styles.extremaRow}>
         {upcoming.map((e) => (
           <div key={e.time} className={`${styles.extremum} ${e.type === 'high' ? styles.high : styles.low}`}>
-            <span className={styles.extremumType}>{e.type === 'high' ? 'High' : 'Low'}</span>
+            <span className={styles.extremumType}>{e.type === 'high' ? 'Høyvann' : 'Lavvann'}</span>
             <span className={styles.extremumVal}>{e.total.toFixed(2)} m</span>
             <span className={styles.extremumTime}>
               {new Date(e.time).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' })}
@@ -73,28 +73,28 @@ export function TidalForecast({ data }: Props) {
           </defs>
           <XAxis
             dataKey="label"
-            tick={{ fill: '#64748b', fontSize: 10 }}
+            tick={{ fill: 'var(--text-3)', fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             interval="preserveStartEnd"
           />
           <YAxis
-            tick={{ fill: '#64748b', fontSize: 10 }}
+            tick={{ fill: 'var(--text-3)', fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             tickFormatter={(v: number) => `${v}m`}
           />
           <Tooltip
-            contentStyle={{ background: '#132040', border: 'none', borderRadius: 8, fontSize: 12 }}
-            labelStyle={{ color: '#94a3b8' }}
-            itemStyle={{ color: '#38bdf8' }}
-            formatter={(v) => [`${Number(v).toFixed(2)} m`, 'Water level']}
+            contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }}
+            labelStyle={{ color: 'var(--text-2)' }}
+            itemStyle={{ color: 'var(--accent)' }}
+            formatter={(v) => [`${Number(v).toFixed(2)} m`, 'Vannstand']}
           />
-          <ReferenceLine x={nowLabel} stroke="#f59e0b" strokeDasharray="3 3" strokeWidth={1.5} />
+          <ReferenceLine x={nowLabel} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
           <Area
             type="monotone"
             dataKey="total"
-            stroke="#38bdf8"
+            stroke="var(--accent)"
             strokeWidth={2}
             fill="url(#tideGrad)"
             dot={false}

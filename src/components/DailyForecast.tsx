@@ -34,8 +34,8 @@ function groupByDay(timeseries: ForecastTimestep[]): DayData[] {
       const date = new Date(key + 'T12:00:00Z');
       const label =
         key === today
-          ? 'Today'
-          : date.toLocaleDateString('no-NO', { weekday: 'short' });
+          ? 'I dag'
+          : date.toLocaleDateString('nb-NO', { weekday: 'short' });
       const symbolCode = symbols[Math.floor(symbols.length / 2)] ?? 'cloudy';
       return {
         label,
@@ -56,7 +56,7 @@ export function DailyForecast({ timeseries }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <h2 className={styles.heading}>7-day forecast</h2>
+      <h2 className={styles.heading}>7-dagersvarsel</h2>
       {days.map((day) => (
         <div key={day.label} className={styles.row}>
           <span className={styles.label}>{day.label}</span>

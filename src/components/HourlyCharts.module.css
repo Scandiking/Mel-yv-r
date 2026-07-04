@@ -1,0 +1,99 @@
+.wrapper {
+  padding: 0 1rem 1rem;
+}
+
+.heading {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0 0 0.1rem;
+}
+
+.hint {
+  font-size: 0.65rem;
+  color: var(--text-4);
+  margin: 0 0 0.5rem;
+}
+
+.extremaRow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.extremum {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 0.4rem 0.65rem;
+  min-width: 64px;
+}
+
+.extremumType {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.high .extremumType { color: var(--accent); }
+.low .extremumType  { color: #818cf8; }
+
+.extremumVal {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.extremumTime {
+  font-size: 0.65rem;
+  color: var(--text-3);
+}
+
+.scrollOuter {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* negative margin so charts bleed to container edge while label stays inset */
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+.scrollOuter::-webkit-scrollbar {
+  display: none;
+}
+
+.chartLabel {
+  font-size: 0.68rem;
+  color: var(--text-4);
+  margin: 0.6rem 0 0.15rem;
+  user-select: none;
+}
+
+/* Wind direction strip: relatively positioned, arrows absolutely placed */
+.windStrip {
+  position: relative;
+  height: 44px;
+  margin-bottom: 0.25rem;
+}
+
+.windItem {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transform: translateX(-50%);
+}
+
+.windDir {
+  font-size: 0.58rem;
+  color: var(--text-2);
+  font-weight: 600;
+  line-height: 1;
+}

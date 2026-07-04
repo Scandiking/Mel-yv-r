@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "copy-icons": "node scripts/copy-icons.js",
+    "predev": "npm run copy-icons",
+    "prebuild": "npm run copy-icons",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

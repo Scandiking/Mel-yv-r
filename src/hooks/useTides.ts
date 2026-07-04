@@ -9,26 +9,25 @@ interface Cache {
   lat: number;
   lon: number;
   ts: number;
-  data: TidalResponse | null;
+  data: TidalResponse;
 }
 
-function loadCache(lat: number, lon: number): TidalResponse | null | undefined {
+function loadCache(lat: number, lon: number): TidalResponse | undefined {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return undefined;
     const cache: Cache = JSON.parse(raw);
     const sameLocation = Math.abs(cache.lat - lat) < 0.01 && Math.abs(cache.lon - lon) < 0.01;
     const fresh = Date.now() - cache.ts < TTL_MS;
-    return sameLocation && fresh ? cache.data : undefined;
+    return sameLocation && fresh && cache.data ? cache.data : undefined;
   } catch {
     return undefined;
   }
 }
 
-function saveCache(lat: number, lon: number, data: TidalResponse | null) {
+function saveCache(lat: number, lon: number, data: TidalResponse) {
   try {
-    const cache: Cache = { lat, lon, ts: Date.now(), data };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ lat, lon, ts: Date.now(), data }));
   } catch {
     // ignore
   }
@@ -55,7 +54,7 @@ export function useTides(lat: number | null, lon: number | null): TidesState {
     setState({ data: null, loading: true, error: null });
     fetchTides(lat, lon)
       .then((data) => {
-        saveCache(lat, lon, data);
+        if (data) saveCache(lat, lon, data);
         setState({ data, loading: false, error: null });
       })
       .catch((err) => {

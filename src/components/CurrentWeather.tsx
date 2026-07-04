@@ -1,9 +1,9 @@
-import { symbolCodeToSvg } from '../services/symbolMap';
+import { symbolCodeToSvg, symbolCodeToNorwegian } from '../services/symbolMap';
 import type { ForecastTimestep } from '../types/weather';
 import styles from './CurrentWeather.module.css';
 
 function windDir(deg: number): string {
-  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const dirs = ['N', 'NØ', 'Ø', 'SØ', 'S', 'SV', 'V', 'NV'];
   return dirs[Math.round(deg / 45) % 8];
 }
 
@@ -21,21 +21,22 @@ export function CurrentWeather({ current, stale }: Props) {
 
   return (
     <div className={styles.card}>
-      {stale && <span className={styles.stale}>Offline – showing cached data</span>}
+      {stale && <span className={styles.stale}>Frakoblet – viser bufret data</span>}
       <img
         className={styles.icon}
         src={symbolCodeToSvg(symbolCode)}
-        alt={symbolCode.replace(/_/g, ' ')}
+        alt={symbolCodeToNorwegian(symbolCode)}
       />
+      <div className={styles.description}>{symbolCodeToNorwegian(symbolCode)}</div>
       <div className={styles.temp}>
         {Math.round(details.air_temperature)}<span className={styles.unit}>°C</span>
       </div>
       <div className={styles.meta}>
-        <span>Wind {details.wind_speed.toFixed(1)} m/s {windDir(details.wind_from_direction)}</span>
+        <span>Vind {details.wind_speed.toFixed(1)} m/s {windDir(details.wind_from_direction)}</span>
         {precipitation > 0 && (
           <span>{precipitation.toFixed(1)} mm{precipProb !== undefined ? ` (${Math.round(precipProb)}%)` : ''}</span>
         )}
-        <span>Humidity {Math.round(details.relative_humidity)}%</span>
+        <span>Fuktighet {Math.round(details.relative_humidity)}%</span>
       </div>
     </div>
   );

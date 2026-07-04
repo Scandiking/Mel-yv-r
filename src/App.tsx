@@ -1,22 +1,24 @@
 import { useGeolocation } from './hooks/useGeolocation';
 import { useWeather } from './hooks/useWeather';
 import { useTides } from './hooks/useTides';
+import { useLocationName } from './hooks/useLocationName';
 import { CurrentWeather } from './components/CurrentWeather';
 import { HourlyForecast } from './components/HourlyForecast';
+import { HourlyCharts } from './components/HourlyCharts';
 import { DailyForecast } from './components/DailyForecast';
-import { TidalForecast } from './components/TidalForecast';
 import './App.css';
 
 export default function App() {
   const geo = useGeolocation();
   const weather = useWeather(geo.lat, geo.lon);
   const tides = useTides(geo.lat, geo.lon);
+  const locationName = useLocationName(geo.lat, geo.lon);
 
   if (geo.loading) {
     return (
       <div className="status">
         <div className="spinner" />
-        <p>Finding your location…</p>
+        <p>Finner posisjon…</p>
       </div>
     );
   }
@@ -24,7 +26,7 @@ export default function App() {
   if (geo.error) {
     return (
       <div className="status">
-        <p className="error-msg">Location access denied.<br />Allow location access and reload.</p>
+        <p className="error-msg">Posisjonstilgang avvist.<br />Tillat posisjonstilgang og last siden på nytt.</p>
       </div>
     );
   }
@@ -33,7 +35,7 @@ export default function App() {
     return (
       <div className="status">
         <div className="spinner" />
-        <p>Loading weather…</p>
+        <p>Laster varsel…</p>
       </div>
     );
   }
@@ -41,7 +43,7 @@ export default function App() {
   if (weather.error && !weather.data) {
     return (
       <div className="status">
-        <p className="error-msg">Could not load weather data.<br />{weather.error}</p>
+        <p className="error-msg">Kunne ikke laste værdata.<br />{weather.error}</p>
       </div>
     );
   }
@@ -52,7 +54,16 @@ export default function App() {
   return (
     <main className="app">
       <header className="app-header">
-        <span className="coords">{geo.lat?.toFixed(3)}° N, {geo.lon?.toFixed(3)}° E</span>
+        <div className="location">
+          <span className="location-name">
+            {locationName ?? `${geo.lat?.toFixed(3)}° N`}
+          </span>
+          {locationName && (
+            <span className="coords">
+              {geo.lat?.toFixed(3)}° N, {geo.lon?.toFixed(3)}° Ø
+            </span>
+          )}
+        </div>
       </header>
 
       {current && (
@@ -68,14 +79,13 @@ export default function App() {
       <div className="divider" />
 
       {timeseries.length > 0 && (
-        <DailyForecast timeseries={timeseries} />
+        <HourlyCharts timeseries={timeseries} tides={tides.data} />
       )}
 
-      {tides.data && (
-        <>
-          <div className="divider" />
-          <TidalForecast data={tides.data} />
-        </>
+      <div className="divider" />
+
+      {timeseries.length > 0 && (
+        <DailyForecast timeseries={timeseries} />
       )}
     </main>
   );

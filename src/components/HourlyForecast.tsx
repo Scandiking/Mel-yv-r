@@ -11,11 +11,11 @@ export function HourlyForecast({ timeseries }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <h2 className={styles.heading}>Next 24 hours</h2>
+      <h2 className={styles.heading}>Neste 24 timer</h2>
       <div className={styles.strip}>
         {hours.map((step) => {
           const date = new Date(step.time);
-          const hour = date.toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
+          const hour = date.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
           const code = step.data.next_1_hours!.summary.symbol_code;
           const temp = Math.round(step.data.instant.details.air_temperature);
           const rain = step.data.next_1_hours!.details.precipitation_amount ?? 0;

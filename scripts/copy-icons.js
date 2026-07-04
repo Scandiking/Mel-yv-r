@@ -1,0 +1,10 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const src = path.join(__dirname, '..', 'node_modules', '@yr', 'weather-symbols', 'dist', 'svg');
+const dest = path.join(__dirname, '..', 'public', 'weather-icons');
+if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+const files = fs.readdirSync(src);
+files.forEach((f) => fs.copyFileSync(path.join(src, f), path.join(dest, f)));
+console.log(`Copied ${files.length} weather icons`);
