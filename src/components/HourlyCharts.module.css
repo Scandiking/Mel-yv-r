@@ -1,29 +1,53 @@
 .wrapper {
-  padding: 0 1rem 1rem;
+  --parchment: #ede6d6;
+  --ink: #17262b;
+  --deep: #0e4550;
+  --brass: #a8752f;
+  --shallow: #cfe6e1;
+  --hazard: #b0392b;
+  --temp: #cf3030;
+  --card-border: rgba(23, 38, 43, 0.12);
+
+  margin: 0.75rem 1rem 0;
+  padding: 1.1rem 1.25rem 1.25rem;
+  background: linear-gradient(165deg, var(--parchment) 0%, var(--parchment) 70%, var(--shallow) 150%);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wrapper {
+    --parchment: #101f26;
+    --ink: #e9dfc8;
+    --deep: #6fd0c4;
+    --brass: #dba75a;
+    --shallow: #1d3a3d;
+    --hazard: #e2685a;
+    --card-border: rgba(233, 223, 200, 0.1);
+  }
 }
 
 .heading {
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-3);
-  margin: 0 0 0.1rem;
+  color: var(--brass);
+  margin: 0 0 0.15rem;
 }
 
 .hint {
   font-size: 0.65rem;
-  color: var(--text-4);
-  margin: 0 0 0.5rem;
+  color: var(--ink);
+  opacity: 0.55;
+  margin: 0 0 0.75rem;
 }
 
 .scrollOuter {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  /* negative margin so charts bleed to container edge while label stays inset */
-  margin: 0 -1rem;
-  padding: 0 1rem;
 }
 
 .scrollOuter::-webkit-scrollbar {
@@ -34,9 +58,6 @@
 .chartStack {
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border-radius: 10px;
-  overflow: hidden;
 }
 
 /* Wind direction strip: relatively positioned, arrows absolutely placed */
@@ -56,8 +77,9 @@
 }
 
 .windDir {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 0.58rem;
-  color: var(--text-2);
+  color: var(--ink);
   font-weight: 600;
   line-height: 1;
 }
@@ -67,9 +89,10 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.75rem;
-  margin-top: 0.6rem;
-  font-size: 0.65rem;
-  color: var(--text-3);
+  margin-top: 0.75rem;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  color: var(--ink);
 }
 
 .legendItem {

@@ -139,9 +139,9 @@ function TempValueDot(props: { cx?: number; cy?: number; payload?: HourPoint; va
   if (cx == null || cy == null || !payload || !isEvenHour(payload.ts)) return null;
   return (
     <g>
-      <circle cx={cx} cy={cy} r={2.5} fill="#CF3030" />
+      <circle cx={cx} cy={cy} r={2.5} fill="var(--temp)" />
       <image href={symbolCodeToSvg(payload.symbol)} x={cx - 8} y={cy - 33} width={16} height={16} />
-      <text x={cx} y={cy - 9} textAnchor="middle" fontSize={9} fontWeight={600} fill="var(--accent)">
+      <text x={cx} y={cy - 9} textAnchor="middle" fontSize={9} fontWeight={600} fill="var(--temp)">
         {value}°
       </text>
     </g>
@@ -153,8 +153,8 @@ function WindValueDot(props: { cx?: number; cy?: number; payload?: HourPoint; va
   if (cx == null || cy == null || !payload || !isEvenHour(payload.ts)) return null;
   return (
     <g>
-      <circle cx={cx} cy={cy} r={2.5} fill="#8b5cf6" />
-      <text x={cx} y={cy - 8} textAnchor="middle" fontSize={9} fontWeight={600} fill="#8b5cf6">
+      <circle cx={cx} cy={cy} r={2.5} fill="var(--brass)" />
+      <text x={cx} y={cy - 8} textAnchor="middle" fontSize={9} fontWeight={600} fill="var(--brass)">
         {value}
       </text>
     </g>
@@ -180,14 +180,14 @@ function makeTideValueDot(extremaByTs: Map<number, TideExtrema>, plotLeft: numbe
     }
     return (
       <g>
-        <circle cx={cx} cy={cy} r={3} fill={isHigh ? 'var(--accent)' : '#818cf8'} />
+        <circle cx={cx} cy={cy} r={3} fill={isHigh ? 'var(--deep)' : 'var(--brass)'} />
         <text
           x={textX}
           y={isHigh ? cy - 10 : cy + 18}
           textAnchor={anchor}
           fontSize={9}
           fontWeight={600}
-          fill={isHigh ? 'var(--accent)' : '#818cf8'}
+          fill={isHigh ? 'var(--deep)' : 'var(--brass)'}
         >
           {extremum.total.toFixed(2)}m
         </text>
@@ -209,10 +209,10 @@ function WindArrow({ direction }: { direction: number }) {
       style={{ transform: `rotate(${direction + 180}deg)`, display: 'block', flexShrink: 0 }}
       aria-hidden="true"
     >
-      <line x1="12" y1="4" x2="12" y2="20" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="12" y1="4" x2="12" y2="20" stroke="var(--brass)" strokeWidth="2.5" strokeLinecap="round" />
       <polyline
         points="7,11 12,4 17,11"
-        stroke="var(--accent)"
+        stroke="var(--brass)"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -226,15 +226,16 @@ function WindArrow({ direction }: { direction: number }) {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border)',
-    borderRadius: 8,
+    background: 'var(--parchment)',
+    border: '1px solid var(--card-border)',
+    borderRadius: 4,
     fontSize: 12,
+    fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
     padding: '6px 10px',
   },
-  labelStyle: { color: 'var(--text-2)' },
+  labelStyle: { color: 'var(--ink)' },
 };
-const TOOLTIP_CURSOR = { stroke: 'var(--text-4)', strokeDasharray: '3 3' };
+const TOOLTIP_CURSOR = { stroke: 'var(--shallow)', strokeDasharray: '3 3' };
 // Shared syncId keeps the hover cursor + tooltip lined up across all three
 // panels; syncMethod "value" matches by timestamp instead of array index,
 // since the tide dataset starts earlier and is bucketed differently.
@@ -291,7 +292,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
     allowDataOverflow: true,
     ticks,
     tickFormatter: tickLabel,
-    tick: { fill: 'var(--text-3)', fontSize: 9 },
+    tick: { fill: 'var(--ink)', fontSize: 9 },
     tickLine: false,
     axisLine: false,
   };
@@ -305,7 +306,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
   const yAxisLeft = {
     yAxisId: 'left' as const,
     width: Y_LEFT,
-    tick: { fill: 'var(--text-3)', fontSize: 10 },
+    tick: { fill: 'var(--ink)', fontSize: 10 },
     tickLine: false,
     axisLine: false,
   };
@@ -314,7 +315,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
     yAxisId: 'right' as const,
     orientation: 'right' as const,
     width: Y_RIGHT,
-    tick: { fill: 'var(--text-3)', fontSize: 9 },
+    tick: { fill: 'var(--ink)', fontSize: 9 },
     tickLine: false,
     axisLine: false,
   };
@@ -329,7 +330,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
 
           {/* ── temperature (line, left axis) + rain (bars, right axis) ── */}
           <ComposedChart width={chartWidth} height={CHART_HEIGHT_COMBINED} data={weatherData} margin={TEMP_CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" vertical={false} />
             <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               {...yAxisLeft}
@@ -340,12 +341,12 @@ export function HourlyCharts({ timeseries, tides }: Props) {
               {...yAxisRight}
               domain={[0, rainDomainMax]}
               tickFormatter={(v: number) => `${v}`}
-              label={{ value: 'mm', position: 'insideTopRight', offset: -2, style: { fill: 'var(--text-3)', fontSize: 9 } }}
+              label={{ value: 'mm', position: 'insideTopRight', offset: -2, style: { fill: 'var(--ink)', fontSize: 9 } }}
             />
             {tempMin < 0 && tempMax > 0 && (
-              <ReferenceLine yAxisId="left" y={0} stroke="var(--text-4)" strokeDasharray="3 3" />
+              <ReferenceLine yAxisId="left" y={0} stroke="var(--shallow)" strokeDasharray="3 3" />
             )}
-            <ReferenceLine yAxisId="left" x={now} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
+            <ReferenceLine yAxisId="left" x={now} stroke="var(--hazard)" strokeDasharray="3 3" strokeWidth={1.5} />
             <Tooltip
               {...TOOLTIP_STYLE}
               cursor={TOOLTIP_CURSOR}
@@ -358,24 +359,24 @@ export function HourlyCharts({ timeseries, tides }: Props) {
               }}
             />
             {/* Bars first so the temp line renders on top */}
-            <Bar yAxisId="right" dataKey="rain" fill="var(--accent-b)" opacity={0.75} radius={[2, 2, 0, 0]} maxBarSize={10} />
-            <Line yAxisId="left" type="monotone" dataKey="temp" stroke="#CF3030" strokeWidth={2} dot={TempValueDot} activeDot={{ r: 4, fill: 'var(--accent)' }} />
+            <Bar yAxisId="right" dataKey="rain" fill="var(--deep)" opacity={0.55} radius={[2, 2, 0, 0]} maxBarSize={10} />
+            <Line yAxisId="left" type="monotone" dataKey="temp" stroke="var(--temp)" strokeWidth={2} dot={TempValueDot} activeDot={{ r: 4, fill: 'var(--temp)' }} />
           </ComposedChart>
 
           {/* ── wind speed ── */}
           <ComposedChart width={chartWidth} height={CHART_HEIGHT_WIND} data={weatherData} margin={CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" vertical={false} />
             <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               yAxisId="left"
               width={Y_LEFT}
               domain={[0, Math.ceil(maxWind) + 1]}
-              tick={{ fill: 'var(--text-3)', fontSize: 10 }}
+              tick={{ fill: 'var(--ink)', fontSize: 10 }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis yAxisId="right" orientation="right" width={Y_RIGHT} tick={false} tickLine={false} axisLine={false} />
-            <ReferenceLine yAxisId="left" x={now} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
+            <ReferenceLine yAxisId="left" x={now} stroke="var(--hazard)" strokeDasharray="3 3" strokeWidth={1.5} />
             <Tooltip
               cursor={TOOLTIP_CURSOR}
               content={({ active, payload }: { active?: boolean; payload?: ReadonlyArray<{ payload?: HourPoint }> }) => {
@@ -384,12 +385,12 @@ export function HourlyCharts({ timeseries, tides }: Props) {
                 return (
                   <div style={TOOLTIP_STYLE.contentStyle}>
                     <div style={TOOLTIP_STYLE.labelStyle}>{tooltipLabel(point.ts)}</div>
-                    <div style={{ color: '#8b5cf6' }}>{point.windSpeed} m/s · {compassDir(point.windDir)}</div>
+                    <div style={{ color: 'var(--brass)' }}>{point.windSpeed} m/s · {compassDir(point.windDir)}</div>
                   </div>
                 );
               }}
             />
-            <Line yAxisId="left" type="monotone" dataKey="windSpeed" stroke="#8b5cf6" strokeWidth={1.5} dot={WindValueDot} activeDot={{ r: 3, fill: '#8b5cf6' }} />
+            <Line yAxisId="left" type="monotone" dataKey="windSpeed" stroke="var(--brass)" strokeWidth={1.5} dot={WindValueDot} activeDot={{ r: 3, fill: 'var(--brass)' }} />
           </ComposedChart>
 
           {/* ── wind direction arrows ── */}
@@ -410,35 +411,35 @@ export function HourlyCharts({ timeseries, tides }: Props) {
             <AreaChart width={chartWidth} height={CHART_HEIGHT_TIDE} data={tideData} margin={CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
               <defs>
                 <linearGradient id="tideGradPanel" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--deep)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--deep)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" vertical={false} />
               <XAxis {...xAxisVisible} />
               <YAxis
                 yAxisId="left"
                 width={Y_LEFT}
-                tick={{ fill: 'var(--text-3)', fontSize: 10 }}
+                tick={{ fill: 'var(--ink)', fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v: number) => `${v}m`}
               />
               {/* Hidden axis reserving the same right-side width as the other panels, so the "now" line lines up */}
               <YAxis yAxisId="right" orientation="right" width={Y_RIGHT} tick={false} tickLine={false} axisLine={false} />
-              <ReferenceLine yAxisId="left" x={now} stroke="var(--warn)" strokeDasharray="3 3" strokeWidth={1.5} />
+              <ReferenceLine yAxisId="left" x={now} stroke="var(--hazard)" strokeDasharray="3 3" strokeWidth={1.5} />
               <Tooltip
                 {...TOOLTIP_STYLE}
                 cursor={TOOLTIP_CURSOR}
                 labelFormatter={(label) => tooltipLabel(Number(label))}
                 formatter={(value) => [`${Number(value).toFixed(2)} m`, 'Vannstand']}
-                itemStyle={{ color: 'var(--accent)' }}
+                itemStyle={{ color: 'var(--deep)' }}
               />
               <Area
                 yAxisId="left"
                 type="monotone"
                 dataKey="total"
-                stroke="var(--accent)"
+                stroke="var(--deep)"
                 strokeWidth={2}
                 fill="url(#tideGradPanel)"
                 dot={tideDot}
@@ -451,20 +452,20 @@ export function HourlyCharts({ timeseries, tides }: Props) {
 
       <div className={styles.legend}>
         <span className={styles.legendItem}>
-          <i className={styles.legendLine} style={{ background: 'var(--accent)' }} />
+          <i className={styles.legendLine} style={{ background: 'var(--temp)' }} />
           Temperatur °C
         </span>
         <span className={styles.legendItem}>
-          <i className={styles.legendSwatch} style={{ background: 'var(--accent-b)' }} />
+          <i className={styles.legendSwatch} style={{ background: 'var(--deep)' }} />
           Nedbør mm
         </span>
         <span className={styles.legendItem}>
-          <i className={styles.legendLine} style={{ background: '#8b5cf6' }} />
+          <i className={styles.legendLine} style={{ background: 'var(--brass)' }} />
           Vind m/s
         </span>
         {hasTide && (
           <span className={styles.legendItem}>
-            <i className={styles.legendLine} style={{ background: 'var(--accent)' }} />
+            <i className={styles.legendLine} style={{ background: 'var(--deep)' }} />
             Tidevann — {tideLocation!.name}
           </span>
         )}
