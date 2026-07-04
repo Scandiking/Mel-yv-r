@@ -66,7 +66,7 @@ export function DailyForecast({ timeseries }: Props) {
             <span className={styles.sep}>/</span>
             <span className={styles.max}>{day.max}°</span>
           </span>
-          {day.rain > 0 && <span className={styles.rain}>{day.rain} mm</span>}
+          <span className={styles.rain}>{day.rain > 0 ? `${day.rain} mm` : '–'}</span>
         </div>
       ))}
     </div>
