@@ -3,7 +3,7 @@
 // Browsers can't call the API directly (User-Agent enforcement), so this proxy adds it.
 export const config = { runtime: 'edge' };
 
-import { parseTidalText } from './_tidalParse';
+import { parseTidalText } from './_tidalParse.js';
 
 export default async function handler(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);

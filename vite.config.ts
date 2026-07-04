@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import { parseTidalText } from './api/_tidalParse';
+import { parseTidalText } from './api/_tidalParse.ts';
 
 // Dev-only stand-in for the Vercel Edge Function at api/tides.ts: fetches the
 // plain-text Tidalwater response from api.met.no (with the mandatory User-Agent

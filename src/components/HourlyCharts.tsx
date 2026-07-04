@@ -139,7 +139,7 @@ function TempValueDot(props: { cx?: number; cy?: number; payload?: HourPoint; va
   if (cx == null || cy == null || !payload || !isEvenHour(payload.ts)) return null;
   return (
     <g>
-      <circle cx={cx} cy={cy} r={2.5} fill="var(--accent)" />
+      <circle cx={cx} cy={cy} r={2.5} fill="#CF3030" />
       <image href={symbolCodeToSvg(payload.symbol)} x={cx - 8} y={cy - 33} width={16} height={16} />
       <text x={cx} y={cy - 9} textAnchor="middle" fontSize={9} fontWeight={600} fill="var(--accent)">
         {value}°
@@ -349,8 +349,9 @@ export function HourlyCharts({ timeseries, tides }: Props) {
             <Tooltip
               {...TOOLTIP_STYLE}
               cursor={TOOLTIP_CURSOR}
-              labelFormatter={tooltipLabel}
-              formatter={(v: number, name: string) => {
+              labelFormatter={(label) => tooltipLabel(Number(label))}
+              formatter={(value, name) => {
+                const v = Number(value);
                 if (name === 'temp') return [`${v} °C`, 'Temperatur'];
                 if (name === 'rain') return [`${v} mm`, 'Nedbør'];
                 return [v, name];
@@ -358,7 +359,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
             />
             {/* Bars first so the temp line renders on top */}
             <Bar yAxisId="right" dataKey="rain" fill="var(--accent-b)" opacity={0.75} radius={[2, 2, 0, 0]} maxBarSize={10} />
-            <Line yAxisId="left" type="monotone" dataKey="temp" stroke="var(--accent)" strokeWidth={2} dot={TempValueDot} activeDot={{ r: 4, fill: 'var(--accent)' }} />
+            <Line yAxisId="left" type="monotone" dataKey="temp" stroke="#CF3030" strokeWidth={2} dot={TempValueDot} activeDot={{ r: 4, fill: 'var(--accent)' }} />
           </ComposedChart>
 
           {/* ── wind speed ── */}
@@ -429,8 +430,8 @@ export function HourlyCharts({ timeseries, tides }: Props) {
               <Tooltip
                 {...TOOLTIP_STYLE}
                 cursor={TOOLTIP_CURSOR}
-                labelFormatter={tooltipLabel}
-                formatter={(v: number) => [`${Number(v).toFixed(2)} m`, 'Vannstand']}
+                labelFormatter={(label) => tooltipLabel(Number(label))}
+                formatter={(value) => [`${Number(value).toFixed(2)} m`, 'Vannstand']}
                 itemStyle={{ color: 'var(--accent)' }}
               />
               <Area
