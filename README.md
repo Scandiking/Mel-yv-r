@@ -1,32 +1,48 @@
-# React + TypeScript + Vite
+# Meløyvær
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A weather and tide dashboard for Meløysjøen — a small fjord just inside the Arctic
+Circle in Nordland, Norway. No accounts, no ads, no tracking — just the forecast.
 
-Currently, two official plugins are available:
+**Live:** [meloyvar.vercel.app](https://meloyvar.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+<table>
+  <tr>
+    <td><img src="docs/screenshot-light.png" width="320" alt="Meløyvær, light mode" /></td>
+    <td><img src="docs/screenshot-dark.png" width="320" alt="Meløyvær, dark mode" /></td>
+  </tr>
+</table>
 
-## React Compiler
+## What it shows
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Current conditions** — temperature, sky, humidity, and a compass-rose dial for
+  wind speed and direction, styled like a ship's instrument panel
+- **Next 24 hours** — a scrollable hour-by-hour strip
+- **7-day hourly chart** — temperature, precipitation, wind, and tide height in one
+  connected, swipeable panel; hovering anywhere shows all four at once
+- **7-day forecast** — daily highs/lows and precipitation totals
+- **Tide times** — high and low water, when available for your location
 
-## Expanding the Oxlint configuration
+Works with either your device's GPS or a manually entered position — the app asks
+first and explains why, and remembers your choice.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Installable as a PWA (add to your phone's home screen) and caches the last forecast
+so it still shows something useful with a spotty connection.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Data sources
+
+- Weather and tide forecasts: [MET Norway](https://api.met.no) (Meteorologisk institutt)
+- Place names: [OpenStreetMap / Nominatim](https://nominatim.openstreetmap.org)
+
+See [personvern.html](https://meloyvar.vercel.app/personvern.html) (Norwegian) for
+the full rundown of what's shared with whom, and what's just cached on your own
+device.
+
+## Running it locally
+
+```sh
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Requires Node 20+. See [DEVLOG.md](DEVLOG.md) for the deeper implementation notes
+and known rough edges.
