@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personvern — Meløyvær</title>
+    <style>
+      :root {
+        --parchment: #ede6d6;
+        --ink: #17262b;
+        --deep: #0e4550;
+        --brass: #a8752f;
+        --shallow: #cfe6e1;
+        --hazard: #b0392b;
+        --page-bg: #0a0f13;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --parchment: #101f26;
+          --ink: #e9dfc8;
+          --deep: #6fd0c4;
+          --brass: #dba75a;
+          --shallow: #1d3a3d;
+          --hazard: #e2685a;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: var(--page-bg); }
+      body {
+        font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: var(--ink);
+      }
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+        min-height: 100vh;
+        padding: 2rem 1.5rem 3rem;
+        background: linear-gradient(165deg, var(--parchment) 0%, var(--parchment) 70%, var(--shallow) 150%);
+        box-shadow: 0 0 48px rgba(0, 0, 0, 0.35);
+      }
+      a { color: var(--brass); }
+      .back {
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+      }
+      h1 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.6rem;
+        color: var(--deep);
+        margin: 0 0 0.25rem;
+      }
+      .updated {
+        font-size: 0.75rem;
+        color: var(--brass);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 0 0 2rem;
+      }
+      h2 {
+        font-size: 1rem;
+        color: var(--deep);
+        border-bottom: 1px solid var(--shallow);
+        padding-bottom: 0.4rem;
+        margin: 2rem 0 0.75rem;
+      }
+      p, li { font-size: 0.92rem; }
+      ul { padding-left: 1.2rem; }
+      li { margin-bottom: 0.5rem; }
+      code {
+        background: rgba(0, 0, 0, 0.06);
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-size: 0.85em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="/">← Tilbake til appen</a>
+      <h1>Personvern</h1>
+      <p class="updated">Sist oppdatert: juli 2026</p>
+
+      <p>
+        Meløyvær er et lite, personlig værvarsel-prosjekt uten selskap bak seg, ingen
+        brukerkontoer og ingen annonser. Denne siden forklarer ærlig hva som skjer med
+        posisjonen din og annen informasjon når du bruker appen.
+      </p>
+
+      <h2>Posisjonen din</h2>
+      <p>
+        Appen spør om GPS-posisjonen din for å kunne vise vær- og tidevannsvarsel for stedet
+        der du faktisk er, i stedet for at du må lete opp og taste inn koordinater selv. Du
+        kan når som helst velge å sette posisjonen manuelt i stedet — trykk på stedsnavnet
+        øverst i appen for å endre valget.
+      </p>
+      <p>
+        Koordinatene sendes videre til værtjenestene nevnt under, direkte fra din nettleser,
+        for å hente frem varselet. Vi lagrer dem ikke på noen server vi kontrollerer.
+      </p>
+
+      <h2>Hva som lagres i nettleseren din</h2>
+      <p>
+        Appen bruker <code>localStorage</code> i nettleseren din — altså lagring som blir
+        værende på din egen enhet, aldri sendt til oss:
+      </p>
+      <ul>
+        <li>Værvarsel (mellomlagret i 30 minutter, for raskere lasting)</li>
+        <li>Tidevannsvarsel (mellomlagret i 1 time)</li>
+        <li>Stedsnavnet for posisjonen din (slår opp navnet én gang, husker det)</li>
+        <li>Om du har valgt GPS eller manuell posisjon</li>
+      </ul>
+      <p>
+        Du kan slette alt dette når som helst via nettleserens innstillinger for
+        nettstedsdata («clear site data»/«nettstedstillatelser»), eller ved å tilbakestille
+        posisjonsvalget i appen.
+      </p>
+
+      <h2>Hvem dataene dine deles med</h2>
+      <ul>
+        <li>
+          <strong>MET Norway</strong> (api.met.no) — mottar koordinatene dine for å levere
+          vær- og tidevannsvarsel. Se
+          <a href="https://api.met.no/doc/TermsOfService" target="_blank" rel="noopener">MET sine egne vilkår</a>.
+        </li>
+        <li>
+          <strong>OpenStreetMap / Nominatim</strong> (nominatim.openstreetmap.org) — mottar
+          koordinatene dine for å slå opp navnet på stedet du er.
+        </li>
+        <li>
+          <strong>Google Fonts</strong> (fonts.googleapis.com / fonts.gstatic.com) — appen
+          laster to skrifttyper fra Googles servere av rent visuelle grunner. Google vil se
+          IP-adressen din når dette skjer. Dette er ikke strengt nødvendig for at appen skal
+          fungere, og kan fjernes ved forespørsel.
+        </li>
+        <li>
+          <strong>Vercel</strong> — er verten som drifter appen og en liten mellomtjeneste
+          («edge function») som henter tidevannsdata på vegne av deg. Standard drift­data
+          (som IP-adresse og tidspunkt) behandles av Vercel som hosting-leverandør.
+        </li>
+      </ul>
+      <p>
+        Ingen av dette brukes til reklame, sporing på tvers av nettsteder, eller selges
+        videre. Det finnes ingen analyseverktøy eller sporingspiksler i appen.
+      </p>
+
+      <h2>Dine rettigheter</h2>
+      <p>
+        Siden ingen personopplysninger lagres av oss, er det lite å be om innsyn i eller
+        sletting av — dataene dine passerer kun gjennom i sanntid for å vise deg et varsel.
+        Har du spørsmål eller ønsker at noe skal endres, gi gjerne beskjed via
+        <a href="https://github.com/Scandiking" target="_blank" rel="noopener">GitHub (@Scandiking)</a>.
+      </p>
+    </main>
+  </body>
+</html>

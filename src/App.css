@@ -21,6 +21,11 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
 }
 
 .location-name {
@@ -61,6 +66,16 @@
 .error-msg {
   color: var(--err);
   line-height: 1.6;
+}
+
+.app-footer {
+  padding: 1rem;
+  text-align: center;
+}
+
+.app-footer a {
+  font-size: 0.7rem;
+  color: var(--text-4);
 }
 
 .spinner {

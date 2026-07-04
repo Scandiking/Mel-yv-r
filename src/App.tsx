@@ -2,6 +2,7 @@ import { useGeolocation } from './hooks/useGeolocation';
 import { useWeather } from './hooks/useWeather';
 import { useTides } from './hooks/useTides';
 import { useLocationName } from './hooks/useLocationName';
+import { LocationConsent } from './components/LocationConsent';
 import { CurrentWeather } from './components/CurrentWeather';
 import { HourlyForecast } from './components/HourlyForecast';
 import { HourlyCharts } from './components/HourlyCharts';
@@ -14,6 +15,10 @@ export default function App() {
   const tides = useTides(geo.lat, geo.lon);
   const locationName = useLocationName(geo.lat, geo.lon);
 
+  if (geo.needsConsent) {
+    return <LocationConsent onAllow={geo.requestGeolocation} onManual={geo.setManualLocation} />;
+  }
+
   if (geo.loading) {
     return (
       <div className="status">
@@ -24,11 +29,7 @@ export default function App() {
   }
 
   if (geo.error) {
-    return (
-      <div className="status">
-        <p className="error-msg">Posisjonstilgang avvist.<br />Tillat posisjonstilgang og last siden på nytt.</p>
-      </div>
-    );
+    return <LocationConsent error={geo.error} onAllow={geo.requestGeolocation} onManual={geo.setManualLocation} />;
   }
 
   if (weather.loading && !weather.data) {
@@ -54,7 +55,7 @@ export default function App() {
   return (
     <main className="app">
       <header className="app-header">
-        <div className="location">
+        <button className="location" onClick={geo.resetLocation} title="Endre posisjon">
           <span className="location-name">
             {locationName ?? `${geo.lat?.toFixed(3)}° N`}
           </span>
@@ -63,7 +64,7 @@ export default function App() {
               {geo.lat?.toFixed(3)}° N, {geo.lon?.toFixed(3)}° Ø
             </span>
           )}
-        </div>
+        </button>
       </header>
 
       {current && (
@@ -87,6 +88,10 @@ export default function App() {
       {timeseries.length > 0 && (
         <DailyForecast timeseries={timeseries} />
       )}
+
+      <footer className="app-footer">
+        <a href="/personvern.html">Personvern</a>
+      </footer>
     </main>
   );
 }
