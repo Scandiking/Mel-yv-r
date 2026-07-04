@@ -3,6 +3,9 @@
 }
 
 :root {
+  /* Fixed dark bezel behind the app column on wide viewports — deliberately
+     not theme-reactive, like the housing around an instrument panel. */
+  --page-bg:     #0a0f13;
   --bg:          #f0f5fa;
   --bg-card:     rgba(255, 255, 255, 0.75);
   --bg-elevated: #ffffff;
@@ -43,7 +46,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--page-bg);
 }
 
 body {

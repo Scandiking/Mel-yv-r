@@ -6,6 +6,7 @@
   color: var(--text);
   display: flex;
   flex-direction: column;
+  box-shadow: 0 0 48px rgba(0, 0, 0, 0.35);
 }
 
 .app-header {
@@ -54,6 +55,7 @@
   font-size: 0.9rem;
   padding: 2rem;
   text-align: center;
+  box-shadow: 0 0 48px rgba(0, 0, 0, 0.35);
 }
 
 .error-msg {
