@@ -1,0 +1,51 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 1.5rem;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.stale {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(234, 179, 8, 0.15);
+  color: #fbbf24;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.icon {
+  width: 96px;
+  height: 96px;
+}
+
+.temp {
+  font-size: 4.5rem;
+  font-weight: 200;
+  line-height: 1;
+  color: #e2e8f0;
+  letter-spacing: -2px;
+}
+
+.unit {
+  font-size: 2rem;
+  font-weight: 300;
+  vertical-align: super;
+  color: #94a3b8;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
