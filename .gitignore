@@ -26,3 +26,7 @@ public/weather-icons
 
 .vercel
 .env*
+
+# Android build output
+*.apk
+*.aab

@@ -146,9 +146,15 @@ offline-first PWA use case ends up mattering more than it does today.
 The `api/tides.ts` Edge Function has only been tested via the Vite dev proxy.
 Needs a Vercel deployment to confirm it works in production before publishing as PWA.
 
-### Android APK not yet built or tested
-`npx cap sync android` and Android Studio build steps have not been run since the tidal rewrite.
-The `overrideUserAgent` in `capacitor.config.ts` is set correctly but untested end-to-end.
+### Android APK built (debug), not yet installed/tested on a device
+`npx cap add android` + `npm run build` + `npx cap sync android` + `./gradlew assembleDebug`
+produced `android/app/build/outputs/apk/debug/app-debug.apk` (~5.3 MB). Built with the Android
+SDK cmdline-tools (platform 35, build-tools 35.0.0) installed to `C:\Users\KM\Android\Sdk`,
+using the JDK bundled with Android Studio (`jbr`, JDK 21) since the system's default `java` is
+still 1.8. `android/local.properties` (machine-specific SDK path, gitignored) points at that SDK.
+Still need to: install the APK on a real device and confirm the `overrideUserAgent` makes the
+tides API call succeed without the Vercel proxy, then build/sign a release APK for actual
+distribution (this is a debug build, unsigned for release).
 
 ### No PWA icons yet
 `public/icons/icon-192.png` and `icon-512.png` referenced in the manifest don't exist.
