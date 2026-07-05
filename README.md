@@ -5,6 +5,8 @@ Circle in Nordland, Norway. No accounts, no ads, no tracking — just the foreca
 
 **Live:** [meloyvar.vercel.app](https://meloyvar.vercel.app)
 
+**Android:** [Download the app](https://github.com/Scandiking/Mel-yv-r/releases/latest) — it's not on the Play Store (see [why](https://keepandroidopen.org)), so Android will show you a few scary "unknown sources" warnings on install. Don't worry about those popups... hehehehe...
+
 <table>
   <tr>
     <td><img src="docs/screenshot-light.png" width="320" alt="Meløyvær, light mode" /></td>
