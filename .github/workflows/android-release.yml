@@ -60,8 +60,9 @@ jobs:
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
+          echo "keystore file size: $(stat -c%s android/keystore/meloyvaer-release.jks) bytes"
           keytool -list -keystore android/keystore/meloyvaer-release.jks \
-            -storepass "$(printf '%s' "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\n\r')" > /dev/null
+            -storepass "$(printf '%s' "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\n\r')"
 
       - name: Build signed release APK
         working-directory: android
