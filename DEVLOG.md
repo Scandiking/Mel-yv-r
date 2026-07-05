@@ -157,6 +157,36 @@ gesture nav bar. `index.html` already had `viewport-fit=cover`, but `App.css` ne
 consumed `env(safe-area-inset-*)`. Added it to `.app-header` (top) and `.app-footer`
 (bottom).
 
+### Got the release workflow actually working — 8 tags, 5 real bugs
+First end-to-end run of `.github/workflows/android-release.yml` (`v1.0.0` through
+`v1.0.8`), each tag surfacing a new failure once the previous one was fixed:
+
+1. **`npx cap sync android` failed instantly** — `[fatal] The Capacitor CLI requires
+   NodeJS >=22.0.0`. The workflow was still pinned to `node-version: 20`. Bumped to 22.
+2. **`./gradlew: Permission denied` (exit 126)** — `android/gradlew` was committed from
+   Windows as mode `100644` (not executable); Linux runners need the `+x` bit that Git
+   itself tracks. Fixed with `git update-index --chmod=+x android/gradlew` and added
+   `android/.gitattributes` pinning `gradlew` to LF line endings so a future Windows
+   re-add can't quietly regress it again.
+3. **`keystore password was incorrect` (from `packageRelease`)** — added a dedicated
+   "Verify keystore password" step to fail fast instead of waiting through a multi-minute
+   Gradle build, but the first version of that step redirected `keytool`'s stdout to
+   `/dev/null` — `keytool` prints its errors to stdout, not stderr, so I'd silenced the
+   only diagnostic the step existed to produce. Removed the redirect and added a
+   `${#VAR}` length print (never the value) for the keystore file size and the password,
+   which is safe to log and immediately shows a blank/wrong-length secret.
+4. **Turned out to be a typo'd secret name**: `ANDROID_KEYSYORE_PASSWORD` (Y) instead of
+   `ANDROID_KEYSTORE_PASSWORD` (T) — the workflow's real secret was never set, so it
+   resolved to an empty string every time, which `keytool` reports as "password was
+   incorrect" rather than "secret not found". The length-logging from fix #3 is what
+   caught this (`raw secret length: 0`).
+5. **"Create GitHub release" failed** after the APK itself built and signed
+   successfully — the default `GITHUB_TOKEN` is read-only unless the workflow
+   explicitly asks for write access. Added a top-level `permissions: contents: write`.
+
+`v1.0.8` is the first real published release:
+https://github.com/Scandiking/Mel-yv-r/releases/tag/v1.0.8
+
 ---
 
 ## Known issues / still open
@@ -187,11 +217,6 @@ Needs a Vercel deployment to confirm it works in production before publishing as
 F-Droid builds from source rather than accepting our binary — needs a separate PR with a
 build recipe to the `fdroiddata` repo. Worth doing once the GitHub Releases APK has had
 more real-world testing.
-
-### GitHub Actions release workflow untested end-to-end
-`.github/workflows/android-release.yml` hasn't actually been run yet — needs the four
-signing secrets added to the repo first, then a `v*` tag pushed to confirm it produces
-a working signed APK the same way the local build did.
 
 ### No PWA icons yet
 `public/icons/icon-192.png` and `icon-512.png` referenced in the manifest don't exist.
