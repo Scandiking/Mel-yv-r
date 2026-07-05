@@ -47,13 +47,21 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           mkdir -p android/keystore
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/keystore/meloyvaer-release.jks
-          cat > android/app/keystore.properties <<EOF
-          storeFile=../keystore/meloyvaer-release.jks
-          storePassword=$ANDROID_KEYSTORE_PASSWORD
-          keyAlias=$ANDROID_KEY_ALIAS
-          keyPassword=$ANDROID_KEY_PASSWORD
-          EOF
+          echo "$ANDROID_KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > android/keystore/meloyvaer-release.jks
+          trim() { printf '%s' "$1" | tr -d '\n\r'; }
+          {
+            echo "storeFile=../keystore/meloyvaer-release.jks"
+            echo "storePassword=$(trim "$ANDROID_KEYSTORE_PASSWORD")"
+            echo "keyAlias=$(trim "$ANDROID_KEY_ALIAS")"
+            echo "keyPassword=$(trim "$ANDROID_KEY_PASSWORD")"
+          } > android/app/keystore.properties
+
+      - name: Verify keystore password
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          keytool -list -keystore android/keystore/meloyvaer-release.jks \
+            -storepass "$(printf '%s' "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\n\r')" > /dev/null
 
       - name: Build signed release APK
         working-directory: android
