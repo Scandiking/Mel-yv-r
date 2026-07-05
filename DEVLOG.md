@@ -122,6 +122,43 @@ Fonts `<link>` in `index.html` (no other components touched):
 
 ---
 
+## Session updates — 2026-07-05
+
+### Android: signed release APK, distributed via GitHub Releases (not Play Store)
+Decided against the Play Store given Google's new Android developer verification
+requirements (see keepandroidopen.org) — distribution is GitHub Releases (installable
+`.apk`) and, eventually, F-Droid.
+
+- Installed the Android SDK (cmdline-tools, platform 35, build-tools 35.0.0) to
+  `C:\Users\KM\Android\Sdk` — nothing was on this machine before, despite Android
+  Studio being installed. Built with the JDK bundled in Android Studio (`jbr`,
+  JDK 21) since the system's default `java` is still 1.8.
+- Generated a self-signed release keystore (`android/keystore/meloyvaer-release.jks`,
+  30-year validity). Keystore + passwords are gitignored and live only on this
+  machine and in GitHub Actions secrets — losing the keystore means all future
+  releases need a new signing identity and existing installs can't update in place.
+- `android/app/build.gradle` reads signing config from `android/app/keystore.properties`
+  (gitignored) when present, and accepts `-PversionCode`/`-PversionName` overrides.
+- Added `.github/workflows/android-release.yml`: on any pushed `v*` tag, builds the
+  web app, runs `cap sync android`, builds a signed release APK, and attaches it to
+  a GitHub Release. Needs four repo secrets set manually (`ANDROID_KEYSTORE_BASE64`,
+  `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`).
+
+### Fixed: geolocation always failed inside the APK with "User denied Geolocation"
+Happened even with the OS permission granted and GPS on. Root cause: `AndroidManifest.xml`
+never declared `ACCESS_COARSE_LOCATION`/`ACCESS_FINE_LOCATION` — without those, Android
+never shows the WebView a real permission grant to hand to `navigator.geolocation`,
+regardless of what the user taps. Added both permissions; works correctly now.
+
+### Fixed: header/footer content clipped by Android browser chrome
+On a Samsung Galaxy S22 in Samsung Internet, the location name (top) and the
+Personvern link (footer) were hidden behind the browser's UI panels and the
+gesture nav bar. `index.html` already had `viewport-fit=cover`, but `App.css` never
+consumed `env(safe-area-inset-*)`. Added it to `.app-header` (top) and `.app-footer`
+(bottom).
+
+---
+
 ## Known issues / still open
 
 ### Tidal data only covers ~3 days, chart expects 7
@@ -146,15 +183,15 @@ offline-first PWA use case ends up mattering more than it does today.
 The `api/tides.ts` Edge Function has only been tested via the Vite dev proxy.
 Needs a Vercel deployment to confirm it works in production before publishing as PWA.
 
-### Android APK built (debug), not yet installed/tested on a device
-`npx cap add android` + `npm run build` + `npx cap sync android` + `./gradlew assembleDebug`
-produced `android/app/build/outputs/apk/debug/app-debug.apk` (~5.3 MB). Built with the Android
-SDK cmdline-tools (platform 35, build-tools 35.0.0) installed to `C:\Users\KM\Android\Sdk`,
-using the JDK bundled with Android Studio (`jbr`, JDK 21) since the system's default `java` is
-still 1.8. `android/local.properties` (machine-specific SDK path, gitignored) points at that SDK.
-Still need to: install the APK on a real device and confirm the `overrideUserAgent` makes the
-tides API call succeed without the Vercel proxy, then build/sign a release APK for actual
-distribution (this is a debug build, unsigned for release).
+### F-Droid submission not started
+F-Droid builds from source rather than accepting our binary — needs a separate PR with a
+build recipe to the `fdroiddata` repo. Worth doing once the GitHub Releases APK has had
+more real-world testing.
+
+### GitHub Actions release workflow untested end-to-end
+`.github/workflows/android-release.yml` hasn't actually been run yet — needs the four
+signing secrets added to the repo first, then a `v*` tag pushed to confirm it produces
+a working signed APK the same way the local build did.
 
 ### No PWA icons yet
 `public/icons/icon-192.png` and `icon-512.png` referenced in the manifest don't exist.
