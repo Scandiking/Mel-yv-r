@@ -3,9 +3,11 @@
 A weather and tide dashboard for Meløysjøen — a small fjord just inside the Arctic
 Circle in Nordland, Norway. No accounts, no ads, no tracking — just the forecast.
 
-**Live:** [meloyvar.vercel.app](https://meloyvar.vercel.app)
+**Website:** [meloyvar.vercel.app](https://meloyvar.vercel.app)
 
-**Android:** [Download the app](https://github.com/Scandiking/Mel-yv-r/releases/latest) — it's not on the Play Store (see [why](https://keepandroidopen.org)), so Android will show you a few scary "unknown sources" warnings on install. Don't worry about those popups... hehehehe...
+**Android app:** [Download the app](https://github.com/Scandiking/Mel-yv-r/releases/latest) — it's not on the Play Store (see [why](https://keepandroidopen.org)), so Android will show you a few scary "unknown sources" warnings on install. Don't worry about those popups... hehehehe...
+
+**No iOS app** That needs a Mac, an iPhone, and a $99/year Apple Developer subscription, so it's Android/web only for now.
 
 <table>
   <tr>
