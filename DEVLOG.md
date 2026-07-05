@@ -187,6 +187,22 @@ First end-to-end run of `.github/workflows/android-release.yml` (`v1.0.0` throug
 `v1.0.8` is the first real published release:
 https://github.com/Scandiking/Mel-yv-r/releases/tag/v1.0.8
 
+### Replaced the app icon (was a sun/rain-cloud, now a brass compass rose)
+The old `favicon.svg` — a sun peeking out from behind a raining cloud — didn't fit the
+app's identity. Replaced it and every derived asset (PWA `icon-192`/`icon-512`,
+`apple-touch-icon`, and Android's adaptive + legacy launcher icons at all five
+densities) with a compass rose, reusing the brass/ink/deep-teal/hazard-red palette
+already established by `CurrentWeather`'s wind dial and `CompassSpinner`, on a dark
+teal ground instead of the previous white `ic_launcher_background`.
+
+No SVG-to-PNG rasterizer existed on this machine (no ImageMagick/Inkscape/rsvg —
+Windows' own `convert.exe` shadows ImageMagick's), so installed `sharp` in a scratch
+npm project outside the repo and rendered two source SVGs: a full-bleed rounded-square
+version for legacy/PWA icons, and a transparent version scaled to Android's adaptive-icon
+safe zone (content kept within the inner ~61% circle of the 108dp foreground canvas so
+it isn't clipped by circle/squircle/rounded-square launcher masks). Source SVGs live only
+in the scratchpad, not the repo — just rendering inputs, not needed at build time.
+
 ---
 
 ## Known issues / still open
