@@ -36,11 +36,17 @@ function compassDir(deg: number): string {
   return DIRS[Math.round(deg / 45) % 8];
 }
 
-function every6h(start: number, end: number): number[] {
-  const step = 6 * 3600_000;
-  const first = Math.ceil(start / step) * step;
+// Timestamps aligned to the *local* clock (06:00, 12:00, …), not UTC —
+// stepping raw epoch ms would drift by the timezone offset.
+function everyNhLocal(hours: number, start: number, end: number): number[] {
+  const d = new Date(start);
+  d.setMinutes(0, 0, 0);
+  let t = d.getTime();
+  if (t < start) t += 3600_000;
   const ticks: number[] = [];
-  for (let t = first; t <= end; t += step) ticks.push(t);
+  for (; t <= end; t += 3600_000) {
+    if (new Date(t).getHours() % hours === 0) ticks.push(t);
+  }
   return ticks;
 }
 
@@ -258,8 +264,14 @@ export function HourlyCharts({ timeseries, tides }: Props) {
   const tideData = tides ? buildTideData(tides, now, domainEnd) : [];
   const tideLocation = tides?.tideLocations[0];
 
-  const ticks = every6h(now, domainEnd);
+  const ticks = everyNhLocal(6, now, domainEnd);
   const chartWidth = DAYS * 24 * PX_PER_HOUR + Y_LEFT + Y_RIGHT;
+
+  // Vertical gridlines every 3 local hours (00, 03, 06, …), as pixel positions
+  // matching the linear time scale used by all panels.
+  const gridVerticalPoints = everyNhLocal(3, now, domainEnd).map(
+    (t) => Y_LEFT + ((t - now) / 3600_000) * PX_PER_HOUR,
+  );
 
   const temps = weatherData.map((d) => d.temp);
   const tempMin = Math.floor(Math.min(...temps)) - 1;
@@ -330,7 +342,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
 
           {/* ── temperature (line, left axis) + rain (bars, right axis) ── */}
           <ComposedChart width={chartWidth} height={CHART_HEIGHT_COMBINED} data={weatherData} margin={TEMP_CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" verticalPoints={gridVerticalPoints} />
             <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               {...yAxisLeft}
@@ -365,7 +377,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
 
           {/* ── wind speed ── */}
           <ComposedChart width={chartWidth} height={CHART_HEIGHT_WIND} data={weatherData} margin={CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" verticalPoints={gridVerticalPoints} />
             <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               yAxisId="left"
@@ -415,7 +427,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
                   <stop offset="95%" stopColor="var(--deep)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" verticalPoints={gridVerticalPoints} />
               <XAxis {...xAxisVisible} />
               <YAxis
                 yAxisId="left"

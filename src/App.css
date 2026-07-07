@@ -78,3 +78,82 @@
   color: var(--text-4);
 }
 
+/* Desktop: full-width two-column grid instead of the phone column */
+@media (min-width: 800px) {
+  .app {
+    max-width: none;
+    width: 100%;
+    box-shadow: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'header header'
+      'current hourly'
+      'charts charts'
+      'daily daily'
+      'footer footer';
+    align-content: start;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+
+  /* Scrollable strips must not blow the grid columns open */
+  .app > * {
+    min-width: 0;
+  }
+
+  /* Hero and 24h cards fill the shared row so they end up the same height */
+  .sec-current,
+  .sec-hourly {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sec-current > *,
+  .sec-hourly > * {
+    flex: 1;
+  }
+
+  /* Inside the 24h card: heading stays top, strip centers in the extra space */
+  .sec-hourly > * {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sec-hourly > * > :last-child {
+    margin-block: auto;
+  }
+
+  .app-header {
+    grid-area: header;
+  }
+
+  .sec-current {
+    grid-area: current;
+  }
+
+  .sec-hourly {
+    grid-area: hourly;
+  }
+
+  .sec-charts {
+    grid-area: charts;
+  }
+
+  .sec-daily {
+    grid-area: daily;
+  }
+
+  .app-footer {
+    grid-area: footer;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .status {
+    max-width: none;
+    box-shadow: none;
+  }
+}
+

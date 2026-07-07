@@ -68,27 +68,35 @@ export default function App() {
         </button>
       </header>
 
-      {current && (
-        <CurrentWeather current={current} stale={weather.stale} />
-      )}
+      <div className="sec-current">
+        {current && (
+          <CurrentWeather current={current} stale={weather.stale} />
+        )}
+      </div>
 
       <div className="divider" />
 
-      {timeseries.length > 0 && (
-        <HourlyForecast timeseries={timeseries} />
-      )}
+      <div className="sec-hourly">
+        {timeseries.length > 0 && (
+          <HourlyForecast timeseries={timeseries} />
+        )}
+      </div>
 
       <div className="divider" />
 
-      {timeseries.length > 0 && (
-        <HourlyCharts timeseries={timeseries} tides={tides.data} />
-      )}
+      <div className="sec-charts">
+        {timeseries.length > 0 && (
+          <HourlyCharts timeseries={timeseries} tides={tides.data} />
+        )}
+      </div>
 
       <div className="divider" />
 
-      {timeseries.length > 0 && (
-        <DailyForecast timeseries={timeseries} />
-      )}
+      <div className="sec-daily">
+        {timeseries.length > 0 && (
+          <DailyForecast timeseries={timeseries} />
+        )}
+      </div>
 
       <footer className="app-footer">
         <a href="/personvern.html">Personvern</a>
