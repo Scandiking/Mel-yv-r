@@ -88,6 +88,7 @@
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       'header header'
+      'birthday birthday'
       'current hourly'
       'charts charts'
       'daily daily'
@@ -125,6 +126,10 @@
 
   .app-header {
     grid-area: header;
+  }
+
+  .sec-birthday {
+    grid-area: birthday;
   }
 
   .sec-current {

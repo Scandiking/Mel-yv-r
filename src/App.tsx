@@ -4,6 +4,7 @@ import { useTides } from './hooks/useTides';
 import { useLocationName } from './hooks/useLocationName';
 import { LocationConsent } from './components/LocationConsent';
 import { CompassSpinner } from './components/CompassSpinner';
+import { BirthdayCard } from './components/BirthdayCard';
 import { CurrentWeather } from './components/CurrentWeather';
 import { HourlyForecast } from './components/HourlyForecast';
 import { HourlyCharts } from './components/HourlyCharts';
@@ -67,6 +68,10 @@ export default function App() {
           )}
         </button>
       </header>
+
+      <div className="sec-birthday">
+        <BirthdayCard />
+      </div>
 
       <div className="sec-current">
         {current && (
