@@ -54,7 +54,7 @@ function tickLabel(ts: number): string {
   const d = new Date(ts);
   const h = d.getHours();
   if (h === 0) return d.toLocaleDateString('nb-NO', { weekday: 'short', day: 'numeric' });
-  return String(h).padStart(2, '0') + ':00';
+  return String(h).padStart(2, '0');
 }
 
 function tooltipLabel(ts: number): string {
@@ -264,12 +264,10 @@ export function HourlyCharts({ timeseries, tides }: Props) {
   const tideData = tides ? buildTideData(tides, now, domainEnd) : [];
   const tideLocation = tides?.tideLocations[0];
 
-  const ticks = everyNhLocal(6, now, domainEnd);
+  const ticks = everyNhLocal(2, now, domainEnd);
   const chartWidth = DAYS * 24 * PX_PER_HOUR + Y_LEFT + Y_RIGHT;
 
-  // Vertical gridlines every 3 local hours (00, 03, 06, …), as pixel positions
-  // matching the linear time scale used by all panels.
-  const gridVerticalPoints = everyNhLocal(3, now, domainEnd).map(
+  const gridXPositions = everyNhLocal(3, now, domainEnd).map(
     (t) => Y_LEFT + ((t - now) / 3600_000) * PX_PER_HOUR,
   );
 
@@ -286,6 +284,10 @@ export function HourlyCharts({ timeseries, tides }: Props) {
   const windItems = weatherData.filter((_, i) => i % 2 === 0);
 
   const hasTide = tideData.length > 0 && !!tideLocation;
+
+  const WIND_STRIP_H = 44;
+  const totalStackHeight =
+    CHART_HEIGHT_COMBINED + CHART_HEIGHT_WIND + WIND_STRIP_H + (hasTide ? CHART_HEIGHT_TIDE : 0);
 
   // Extrema (high/low) plotted directly on the tide chart, keyed by timestamp.
   const extremaByTs = new Map<number, TideExtrema>(
@@ -340,9 +342,16 @@ export function HourlyCharts({ timeseries, tides }: Props) {
       <div className={styles.scrollOuter}>
         <div className={styles.chartStack} style={{ width: chartWidth }}>
 
+          {/* ── full-height vertical gridlines spanning all panels ── */}
+          <svg className={styles.gridOverlay} width={chartWidth} height={totalStackHeight}>
+            {gridXPositions.map((x) => (
+              <line key={x} x1={x} y1={0} x2={x} y2={totalStackHeight} stroke="var(--ink)" strokeOpacity={0.1} strokeWidth={1} />
+            ))}
+          </svg>
+
           {/* ── temperature (line, left axis) + rain (bars, right axis) ── */}
           <ComposedChart width={chartWidth} height={CHART_HEIGHT_COMBINED} data={weatherData} margin={TEMP_CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" verticalPoints={gridVerticalPoints} />
+            <CartesianGrid vertical={false} stroke="var(--ink)" strokeOpacity={0.07} />
             <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               {...yAxisLeft}
@@ -377,7 +386,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
 
           {/* ── wind speed ── */}
           <ComposedChart width={chartWidth} height={CHART_HEIGHT_WIND} data={weatherData} margin={CHART_MARGIN} syncId={SYNC_ID} syncMethod="value">
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" verticalPoints={gridVerticalPoints} />
+            <CartesianGrid vertical={false} stroke="var(--ink)" strokeOpacity={0.07} />
             <XAxis {...(weatherPanelIsLast ? xAxisVisible : xAxisHidden)} />
             <YAxis
               yAxisId="left"
@@ -427,7 +436,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
                   <stop offset="95%" stopColor="var(--deep)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--shallow)" verticalPoints={gridVerticalPoints} />
+              <CartesianGrid vertical={false} stroke="var(--ink)" strokeOpacity={0.07} />
               <XAxis {...xAxisVisible} />
               <YAxis
                 yAxisId="left"

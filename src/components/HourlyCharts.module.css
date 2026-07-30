@@ -58,6 +58,21 @@
 .chartStack {
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.gridOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Lift each direct chart child above the grid overlay */
+.chartStack > :not(.gridOverlay) {
+  position: relative;
+  z-index: 1;
 }
 
 /* Wind direction strip: relatively positioned, arrows absolutely placed */
