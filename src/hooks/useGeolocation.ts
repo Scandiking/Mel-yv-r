@@ -66,7 +66,7 @@ export function useGeolocation(): GeoState {
   const requestGeolocation = useCallback(() => {
     setConsented(true);
     if (!navigator.geolocation) {
-      setState({ lat: null, lon: null, error: 'Nettleseren støtter ikke posisjonstjenester.', loading: false });
+      setState({ lat: null, lon: null, error: 'GEO_NOT_SUPPORTED', loading: false });
       return;
     }
     setState((s) => ({ ...s, loading: true, error: null }));

@@ -1,17 +1,11 @@
 import { useEffect, useState } from 'react';
-import { symbolCodeToSvg, symbolCodeToNorwegian } from '../services/symbolMap';
+import { symbolCodeToSvg } from '../services/symbolMap';
 import type { ForecastTimestep } from '../types/weather';
 import styles from './CurrentWeather.module.css';
+import { useT } from '../i18n/useT';
 
-const DIRS = ['N', 'NØ', 'Ø', 'SØ', 'S', 'SV', 'V', 'NV'];
-function windDir(deg: number): string {
-  return DIRS[Math.round(deg / 45) % 8];
-}
-
-// Compass-rose dial: the needle shows where the wind is blowing TO (matching the
-// hourly-chart arrows), while the printed letter below states the classic
-// meteorological "blowing from" bearing.
 function CompassRose({ speed, fromDeg }: { speed: number; fromDeg: number }) {
+  const t = useT();
   const toDeg = (fromDeg + 180) % 360;
   const [angle, setAngle] = useState(toDeg - 55);
 
@@ -21,7 +15,10 @@ function CompassRose({ speed, fromDeg }: { speed: number; fromDeg: number }) {
   }, [toDeg]);
 
   const majorTicks = [0, 45, 90, 135, 180, 225, 270, 315];
-  const cardinalLabels: Record<number, string> = { 0: 'N', 90: 'Ø', 180: 'S', 270: 'V' };
+
+  function windDir(deg: number): string {
+    return t.cardinals[Math.round(deg / 45) % 8];
+  }
 
   return (
     <div className={styles.dialWrap}>
@@ -29,7 +26,7 @@ function CompassRose({ speed, fromDeg }: { speed: number; fromDeg: number }) {
         <circle cx="50" cy="50" r="44" className={styles.dialRing} />
         {majorTicks.map((deg) => {
           const rad = (deg * Math.PI) / 180;
-          const isCardinal = deg in cardinalLabels;
+          const isCardinal = deg in t.compassLabels;
           const rOuter = 44;
           const rInner = isCardinal ? 37 : 39;
           const x1 = 50 + rOuter * Math.sin(rad);
@@ -43,7 +40,7 @@ function CompassRose({ speed, fromDeg }: { speed: number; fromDeg: number }) {
               <line x1={x1} y1={y1} x2={x2} y2={y2} className={styles.dialTick} />
               {isCardinal && (
                 <text x={lx} y={ly} className={styles.dialLabel} textAnchor="middle" dominantBaseline="middle">
-                  {cardinalLabels[deg]}
+                  {t.compassLabels[deg]}
                 </text>
               )}
             </g>
@@ -57,7 +54,7 @@ function CompassRose({ speed, fromDeg }: { speed: number; fromDeg: number }) {
       </svg>
       <div className={styles.dialReadout}>
         <span className={styles.dialSpeed}>{speed.toFixed(1)} m/s</span>
-        <span className={styles.dialFrom}>fra {windDir(fromDeg)}</span>
+        <span className={styles.dialFrom}>{t.windFrom(windDir(fromDeg))}</span>
       </div>
     </div>
   );
@@ -69,6 +66,7 @@ interface Props {
 }
 
 export function CurrentWeather({ current, stale }: Props) {
+  const t = useT();
   const details = current.data.instant.details;
   const next = current.data.next_1_hours ?? current.data.next_6_hours;
   const symbolCode = next?.summary.symbol_code ?? 'cloudy';
@@ -77,7 +75,7 @@ export function CurrentWeather({ current, stale }: Props) {
 
   return (
     <div className={styles.card}>
-      {stale && <span className={styles.stale}>Offline</span>}
+      {stale && <span className={styles.stale}>{t.offline}</span>}
 
       <div className={styles.hero}>
         <div className={styles.readingCol}>
@@ -90,17 +88,17 @@ export function CurrentWeather({ current, stale }: Props) {
               src={symbolCodeToSvg(symbolCode)}
               alt=""
             />
-            {symbolCodeToNorwegian(symbolCode)}
+            {t.weather[symbolCode] ?? t.weatherFallback}
           </div>
 
           <div className={styles.stats}>
             <div className={styles.stat}>
-              <span className={styles.statLabel}>Fuktighet</span>
+              <span className={styles.statLabel}>{t.humidity}</span>
               <span className={styles.statValue}>{Math.round(details.relative_humidity)}%</span>
             </div>
             {precipitation > 0 && (
               <div className={styles.stat}>
-                <span className={styles.statLabel}>Nedbør</span>
+                <span className={styles.statLabel}>{t.precipitation}</span>
                 <span className={styles.statValue}>
                   {precipitation.toFixed(1)} mm{precipProb !== undefined ? ` · ${Math.round(precipProb)}%` : ''}
                 </span>

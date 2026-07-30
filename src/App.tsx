@@ -9,9 +9,11 @@ import { CurrentWeather } from './components/CurrentWeather';
 import { HourlyForecast } from './components/HourlyForecast';
 import { HourlyCharts } from './components/HourlyCharts';
 import { DailyForecast } from './components/DailyForecast';
+import { useT } from './i18n/useT';
 import './App.css';
 
 export default function App() {
+  const t = useT();
   const geo = useGeolocation();
   const weather = useWeather(geo.lat, geo.lon);
   const tides = useTides(geo.lat, geo.lon);
@@ -25,7 +27,7 @@ export default function App() {
     return (
       <div className="status">
         <CompassSpinner />
-        <p>Finner posisjon…</p>
+        <p>{t.findingPosition}</p>
       </div>
     );
   }
@@ -38,7 +40,7 @@ export default function App() {
     return (
       <div className="status">
         <CompassSpinner />
-        <p>Laster varsel…</p>
+        <p>{t.loadingForecast}</p>
       </div>
     );
   }
@@ -46,7 +48,7 @@ export default function App() {
   if (weather.error && !weather.data) {
     return (
       <div className="status">
-        <p className="error-msg">Kunne ikke laste værdata.<br />{weather.error}</p>
+        <p className="error-msg">{t.weatherLoadError}<br />{weather.error}</p>
       </div>
     );
   }
@@ -57,13 +59,13 @@ export default function App() {
   return (
     <main className="app">
       <header className="app-header">
-        <button className="location" onClick={geo.resetLocation} title="Endre posisjon">
+        <button className="location" onClick={geo.resetLocation} title={t.changeLocation}>
           <span className="location-name">
             {locationName ?? `${geo.lat?.toFixed(3)}° N`}
           </span>
           {locationName && (
             <span className="coords">
-              {geo.lat?.toFixed(3)}° N, {geo.lon?.toFixed(3)}° Ø
+              {geo.lat?.toFixed(3)}° N, {geo.lon?.toFixed(3)}{t.coordsSuffix}
             </span>
           )}
         </button>
@@ -104,7 +106,7 @@ export default function App() {
       </div>
 
       <footer className="app-footer">
-        <a href="/personvern.html">Personvern</a>
+        <a href="/personvern.html">{t.privacy}</a>
       </footer>
     </main>
   );

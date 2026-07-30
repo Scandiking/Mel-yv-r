@@ -1,21 +1,23 @@
 import { symbolCodeToSvg } from '../services/symbolMap';
 import type { ForecastTimestep } from '../types/weather';
 import styles from './HourlyForecast.module.css';
+import { useT } from '../i18n/useT';
 
 interface Props {
   timeseries: ForecastTimestep[];
 }
 
 export function HourlyForecast({ timeseries }: Props) {
-  const hours = timeseries.slice(0, 24).filter((t) => t.data.next_1_hours);
+  const t = useT();
+  const hours = timeseries.slice(0, 24).filter((ts) => ts.data.next_1_hours);
 
   return (
     <div className={styles.wrapper}>
-      <h2 className={styles.heading}>Neste 24 timer</h2>
+      <h2 className={styles.heading}>{t.next24h}</h2>
       <div className={styles.strip}>
         {hours.map((step) => {
           const date = new Date(step.time);
-          const hour = date.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
+          const hour = date.toLocaleTimeString(t.dateLocale, { hour: '2-digit', minute: '2-digit' });
           const code = step.data.next_1_hours!.summary.symbol_code;
           const temp = Math.round(step.data.instant.details.air_temperature);
           const rain = step.data.next_1_hours!.details.precipitation_amount ?? 0;

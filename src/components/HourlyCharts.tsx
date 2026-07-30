@@ -14,6 +14,7 @@ import type { ForecastTimestep } from '../types/weather';
 import type { TidalResponse, TideExtrema } from '../types/tides';
 import { symbolCodeToSvg } from '../services/symbolMap';
 import styles from './HourlyCharts.module.css';
+import { useT } from '../i18n/useT';
 
 // ─── constants ───────────────────────────────────────────────────────────────
 
@@ -31,9 +32,8 @@ const CHART_HEIGHT_TIDE = 100;
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-const DIRS = ['N', 'NØ', 'Ø', 'SØ', 'S', 'SV', 'V', 'NV'];
-function compassDir(deg: number): string {
-  return DIRS[Math.round(deg / 45) % 8];
+function makeCompassDir(cardinals: readonly string[]) {
+  return (deg: number) => cardinals[Math.round(deg / 45) % 8];
 }
 
 // Timestamps aligned to the *local* clock (06:00, 12:00, …), not UTC —
@@ -50,15 +50,15 @@ function everyNhLocal(hours: number, start: number, end: number): number[] {
   return ticks;
 }
 
-function tickLabel(ts: number): string {
+function tickLabel(ts: number, dateLocale: string): string {
   const d = new Date(ts);
   const h = d.getHours();
-  if (h === 0) return d.toLocaleDateString('nb-NO', { weekday: 'short', day: 'numeric' });
+  if (h === 0) return d.toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric' });
   return String(h).padStart(2, '0');
 }
 
-function tooltipLabel(ts: number): string {
-  return new Date(ts).toLocaleString('nb-NO', {
+function tooltipLabel(ts: number, dateLocale: string): string {
+  return new Date(ts).toLocaleString(dateLocale, {
     weekday: 'short',
     hour: '2-digit',
     minute: '2-digit',
@@ -255,6 +255,8 @@ interface Props {
 }
 
 export function HourlyCharts({ timeseries, tides }: Props) {
+  const t = useT();
+  const compassDir = makeCompassDir(t.cardinals);
   const now = Date.now();
   const domainEnd = now + DURATION_MS;
 
@@ -305,7 +307,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
     // out of alignment with the temperature/wind panels.
     allowDataOverflow: true,
     ticks,
-    tickFormatter: tickLabel,
+    tickFormatter: (v: number) => tickLabel(v, t.dateLocale),
     tick: { fill: 'var(--ink)', fontSize: 9 },
     tickLine: false,
     axisLine: false,
@@ -336,8 +338,8 @@ export function HourlyCharts({ timeseries, tides }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <h2 className={styles.heading}>Timevarsel</h2>
-      <p className={styles.hint}>← sveip for å se 7 dager frem</p>
+      <h2 className={styles.heading}>{t.hourlyForecast}</h2>
+      <p className={styles.hint}>{t.swipeHint}</p>
 
       <div className={styles.scrollOuter}>
         <div className={styles.chartStack} style={{ width: chartWidth }}>
@@ -371,11 +373,11 @@ export function HourlyCharts({ timeseries, tides }: Props) {
             <Tooltip
               {...TOOLTIP_STYLE}
               cursor={TOOLTIP_CURSOR}
-              labelFormatter={(label) => tooltipLabel(Number(label))}
+              labelFormatter={(label) => tooltipLabel(Number(label), t.dateLocale)}
               formatter={(value, name) => {
                 const v = Number(value);
-                if (name === 'temp') return [`${v} °C`, 'Temperatur'];
-                if (name === 'rain') return [`${v} mm`, 'Nedbør'];
+                if (name === 'temp') return [`${v} °C`, t.tempTooltip];
+                if (name === 'rain') return [`${v} mm`, t.rainTooltip];
                 return [v, name];
               }}
             />
@@ -405,7 +407,7 @@ export function HourlyCharts({ timeseries, tides }: Props) {
                 if (!active || !point) return null;
                 return (
                   <div style={TOOLTIP_STYLE.contentStyle}>
-                    <div style={TOOLTIP_STYLE.labelStyle}>{tooltipLabel(point.ts)}</div>
+                    <div style={TOOLTIP_STYLE.labelStyle}>{tooltipLabel(point.ts, t.dateLocale)}</div>
                     <div style={{ color: 'var(--brass)' }}>{point.windSpeed} m/s · {compassDir(point.windDir)}</div>
                   </div>
                 );
@@ -452,8 +454,8 @@ export function HourlyCharts({ timeseries, tides }: Props) {
               <Tooltip
                 {...TOOLTIP_STYLE}
                 cursor={TOOLTIP_CURSOR}
-                labelFormatter={(label) => tooltipLabel(Number(label))}
-                formatter={(value) => [`${Number(value).toFixed(2)} m`, 'Vannstand']}
+                labelFormatter={(label) => tooltipLabel(Number(label), t.dateLocale)}
+                formatter={(value) => [`${Number(value).toFixed(2)} m`, t.waterLevelTooltip]}
                 itemStyle={{ color: 'var(--deep)' }}
               />
               <Area
@@ -474,20 +476,20 @@ export function HourlyCharts({ timeseries, tides }: Props) {
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <i className={styles.legendLine} style={{ background: 'var(--temp)' }} />
-          Temperatur °C
+          {t.tempLegend}
         </span>
         <span className={styles.legendItem}>
           <i className={styles.legendSwatch} style={{ background: 'var(--deep)' }} />
-          Nedbør mm
+          {t.rainLegend}
         </span>
         <span className={styles.legendItem}>
           <i className={styles.legendLine} style={{ background: 'var(--brass)' }} />
-          Vind m/s
+          {t.windLegend}
         </span>
         {hasTide && (
           <span className={styles.legendItem}>
             <i className={styles.legendLine} style={{ background: 'var(--deep)' }} />
-            Tidevann — {tideLocation!.name}
+            {t.tidesLegend(tideLocation!.name)}
           </span>
         )}
       </div>

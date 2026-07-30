@@ -1,17 +1,17 @@
 import styles from './CompassSpinner.module.css';
+import { useT } from '../i18n/useT';
 
 const MAJOR_TICKS = [0, 45, 90, 135, 180, 225, 270, 315];
-const CARDINAL_LABELS: Record<number, string> = { 0: 'N', 90: 'Ø', 180: 'S', 270: 'V' };
 
-// Same compass-rose face as the wind dial on the hero card, but with the
-// needle spinning continuously instead of settling on a real bearing.
 export function CompassSpinner() {
+  const t = useT();
+
   return (
-    <svg viewBox="0 0 100 100" width="72" height="72" className={styles.dial} role="status" aria-label="Laster">
+    <svg viewBox="0 0 100 100" width="72" height="72" className={styles.dial} role="status" aria-label={t.loadingAriaLabel}>
       <circle cx="50" cy="50" r="44" className={styles.ring} />
       {MAJOR_TICKS.map((deg) => {
         const rad = (deg * Math.PI) / 180;
-        const isCardinal = deg in CARDINAL_LABELS;
+        const isCardinal = deg in t.compassLabels;
         const rOuter = 44;
         const rInner = isCardinal ? 37 : 39;
         const x1 = 50 + rOuter * Math.sin(rad);
@@ -25,7 +25,7 @@ export function CompassSpinner() {
             <line x1={x1} y1={y1} x2={x2} y2={y2} className={styles.tick} />
             {isCardinal && (
               <text x={lx} y={ly} className={styles.label} textAnchor="middle" dominantBaseline="middle">
-                {CARDINAL_LABELS[deg]}
+                {t.compassLabels[deg]}
               </text>
             )}
           </g>
