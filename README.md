@@ -1,4 +1,4 @@
-# Meløyvær
+# [Meløyvær](https://www.meløyvær.net/)
 
 A stylized weather and tide dashboard for Meløy, a small place just inside the Arctic Circle in Nordland, Norway.
 
@@ -15,7 +15,9 @@ No accounts, no ads, no tracking. Just the forecast.
 
 The repository is named `Mel-yv-r` on GitHub due to special-character limitations. The project itself is called Meløyvær.
 
-**Website:** [meloyvar.vercel.app](https://meloyvar.vercel.app)
+**Website:**  
+- [meløyær.net](https://www.meløyvær.net/)
+- [meloyvar.vercel.app](https://meloyvar.vercel.app)
 
 **Android:** [Download APK](https://github.com/Scandiking/Mel-yv-r/releases/latest). Not on the Play Store ([why](https://keepandroidopen.org)); Android will show a few "unknown sources" warnings on install.
 
