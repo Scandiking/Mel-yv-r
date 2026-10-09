@@ -269,7 +269,8 @@ export function HourlyCharts({ timeseries, tides }: Props) {
   const ticks = everyNhLocal(2, now, domainEnd);
   const chartWidth = DAYS * 24 * PX_PER_HOUR + Y_LEFT + Y_RIGHT;
 
-  const gridXPositions = everyNhLocal(3, now, domainEnd).map(
+  // Gridlines sit on the same even hours as the axis labels and value dots.
+  const gridXPositions = ticks.map(
     (t) => Y_LEFT + ((t - now) / 3600_000) * PX_PER_HOUR,
   );
 
@@ -282,8 +283,8 @@ export function HourlyCharts({ timeseries, tides }: Props) {
 
   const maxWind = Math.max(...weatherData.map((d) => d.windSpeed), 2);
 
-  // Wind direction arrows: every other hour to avoid crowding
-  const windItems = weatherData.filter((_, i) => i % 2 === 0);
+  // Wind direction arrows: even hours only, matching the labels and gridlines
+  const windItems = weatherData.filter((d) => isEvenHour(d.ts));
 
   const hasTide = tideData.length > 0 && !!tideLocation;
 

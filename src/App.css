@@ -114,6 +114,16 @@
     flex: 1;
   }
 
+  /* Split the inner gutter so the gap between the two cards matches the
+     0.75rem vertical gap between rows (instead of 1rem + 1rem) */
+  .sec-current > * {
+    margin-right: 0.375rem;
+  }
+
+  .sec-hourly > * {
+    margin-left: 0.375rem;
+  }
+
   /* Inside the 24h card: heading stays top, strip centers in the extra space */
   .sec-hourly > * {
     display: flex;
