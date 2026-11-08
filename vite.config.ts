@@ -65,6 +65,8 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registered manually in main.tsx so the Android app can skip it
+      injectRegister: null,
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
         name: 'Meloyvaer',
